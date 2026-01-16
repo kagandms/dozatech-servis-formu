@@ -27,7 +27,6 @@ if (loginPassword) {
 function handleLogin() {
     const pwd = loginPassword.value;
     if (pwd === APP_PASSWORD) {
-        // Save auth state
         sessionStorage.setItem('dozatech_auth', 'true');
 
         if (rememberMe && rememberMe.checked) {
@@ -43,7 +42,6 @@ function handleLogin() {
         if (navigator.vibrate) navigator.vibrate(100);
     }
 }
-
 // === END PASSWORD PROTECTION ===
 
 // PWA Install handling
@@ -218,6 +216,23 @@ function convertTurkish(t) {
         .replace(/ö/g, 'o').replace(/Ö/g, 'O').replace(/ç/g, 'c').replace(/Ç/g, 'C');
 }
 
+// Helper to get logo data URL
+function getLogoDataUrl() {
+    const img = document.querySelector('.logo-image');
+    if (!img) return null;
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        return canvas.toDataURL('image/png');
+    } catch (e) {
+        console.error('Logo conversion error:', e);
+        return null;
+    }
+}
+
 function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -227,99 +242,195 @@ function generatePDFBlob() {
     const pw = doc.internal.pageSize.width;
     const ph = doc.internal.pageSize.height;
 
+    // Theme Colors
+    const colDark = [10, 10, 20];      // #0a0a14
+    const colPrimary = [76, 201, 240]; // #4cc9f0
+    const colAccent = [67, 97, 238];   // #4361ee
+
     let y = 0;
-    doc.setFillColor(26, 26, 46);
-    doc.rect(0, 0, pw, 38, 'F');
+
+    // === HEADER ===
+    doc.setFillColor(...colDark);
+    doc.rect(0, 0, pw, 45, 'F');
+
+    // Logo (White Container)
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(15, 10, 50, 25, 4, 4, 'F');
+
+    const logoData = getLogoDataUrl();
+    if (logoData) {
+        try {
+            const imgProps = doc.getImageProperties(logoData);
+            const ratio = imgProps.height / imgProps.width;
+            const logoW = 40;
+            const logoH = logoW * ratio;
+            const logoY = 10 + (25 - logoH) / 2;
+            doc.addImage(logoData, 'PNG', 20, logoY, logoW, logoH);
+        } catch (e) { console.error(e); }
+    } else {
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DozaTech', 25, 25);
+    }
+
+    // Title & Date
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('DozaTech', pw / 2, 16, { align: 'center' });
+    doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
+
+    doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Servis Formu', pw / 2, 26, { align: 'center' });
-    doc.setTextColor(76, 201, 240);
-    doc.setFontSize(8);
-    doc.text(date + ' - ' + time, pw / 2, 34, { align: 'center' });
+    doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
 
-    y = 48;
+    // Decorative Line
+    doc.setDrawColor(...colPrimary);
+    doc.setLineWidth(0.5);
+    doc.line(15, 45, pw - 15, 45);
 
+    y = 60;
+
+    // === CUSTOMER INFO ===
     if (customer) {
-        doc.setFillColor(245, 245, 245);
-        doc.roundedRect(15, y, pw - 30, 22, 3, 3, 'F');
-        doc.setTextColor(67, 97, 238);
+        doc.setDrawColor(...colAccent);
+        doc.setLineWidth(0.3);
+        doc.setFillColor(250, 250, 255);
+        doc.roundedRect(15, y, pw - 30, 25, 2, 2, 'FD');
+
+        doc.setFillColor(...colAccent);
+        doc.circle(24, y + 12, 5, 'F');
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(8);
+        doc.text('M', 24, y + 13.5, { align: 'center' });
+
+        doc.setTextColor(...colDark);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('MUSTERI', 20, y + 6);
-        doc.setTextColor(33, 37, 41);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text(convertTurkish(customer.name), 20, y + 14);
-        doc.setFontSize(8);
+        doc.text(convertTurkish(customer.name), 34, y + 10);
+
         doc.setTextColor(100, 100, 100);
-        doc.text(customer.phone, 20, y + 20);
-        y += 28;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(customer.phone, 34, y + 18);
+
+        y += 35;
+    } else {
+        y += 10;
     }
 
-    doc.setFillColor(67, 97, 238);
-    doc.roundedRect(15, y, pw - 30, 9, 2, 2, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
+    // === MACHINES ===
+    doc.setTextColor(...colDark);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('TOPLAM: ' + machineCount + ' MAKINE', pw / 2, y + 6, { align: 'center' });
-    y += 14;
+    doc.text(`TOPLAM ${machineCount} MAKINE KONTROL EDILDI`, 15, y);
+    doc.setDrawColor(...colPrimary);
+    doc.line(15, y + 3, 100, y + 3);
+    y += 15;
 
     for (let i = 1; i <= machineCount; i++) {
-        if (y > 250) { doc.addPage(); y = 20; }
-        doc.setFillColor(76, 201, 240);
-        doc.roundedRect(15, y, pw - 30, 7, 2, 2, 'F');
-        doc.setTextColor(26, 26, 46);
-        doc.setFontSize(9);
+        if (y > 230) { doc.addPage(); y = 20; }
+
+        doc.setFillColor(...colPrimary);
+        doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
+        doc.setTextColor(...colDark);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text('Makine ' + i, 20, y + 5);
-        y += 10;
+        doc.text(`Makine ${i}`, 20, y + 5.5);
+
+        y += 12;
+
         const state = machineStates[i] || {};
-        doc.setFontSize(8);
-        checklistItems.forEach(item => {
-            const checked = state[item.id];
-            if (checked) {
-                doc.setFillColor(6, 214, 160);
-                doc.roundedRect(20, y - 3, 4, 4, 1, 1, 'F');
-                doc.setTextColor(6, 214, 160);
-            } else {
-                doc.setDrawColor(160, 160, 160);
-                doc.roundedRect(20, y - 3, 4, 4, 1, 1, 'S');
-                doc.setTextColor(100, 100, 100);
-            }
-            doc.setFont('helvetica', 'normal');
-            doc.text(convertTurkish(item.label), 27, y);
-            y += 5;
-        });
-        y += 4;
-    }
-
-    if (generalNotes.value.trim()) {
-        if (y > 240) { doc.addPage(); y = 20; }
-        const txt = convertTurkish(generalNotes.value);
-        const lines = doc.splitTextToSize(txt, pw - 50);
-        const bh = Math.max(18, 10 + lines.length * 4);
-        doc.setFillColor(245, 245, 245);
-        doc.roundedRect(15, y, pw - 30, bh, 3, 3, 'F');
-        doc.setTextColor(67, 97, 238);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text('NOTLAR', 20, y + 6);
-        doc.setTextColor(33, 37, 41);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-        let ny = y + 11;
-        lines.forEach(l => { doc.text(l, 20, ny); ny += 4; });
+
+        let xPos = 20;
+        let startY = y;
+
+        checklistItems.forEach((item, index) => {
+            const checked = state[item.id];
+
+            if (checked) {
+                doc.setFillColor(46, 204, 113);
+                doc.rect(xPos, y - 3, 4, 4, 'F');
+                doc.setTextColor(46, 204, 113);
+            } else {
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(xPos, y - 3, 4, 4, 'S');
+                doc.setTextColor(150, 150, 150);
+            }
+
+            doc.text(convertTurkish(item.label), xPos + 6, y);
+
+            if (index % 2 === 0) {
+                xPos = pw / 2 + 5;
+            } else {
+                xPos = 20;
+                y += 6;
+            }
+        });
+
+        if (checklistItems.length % 2 !== 0) y += 6;
+        y += 8;
     }
 
-    doc.setFillColor(26, 26, 46);
-    doc.rect(0, ph - 10, pw, 10, 'F');
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(6);
-    doc.text('DozaTech Servis', pw / 2, ph - 4, { align: 'center' });
+    // === NOTES ===
+    if (generalNotes.value.trim()) {
+        if (y > 220) { doc.addPage(); y = 20; }
+
+        const txt = convertTurkish(generalNotes.value);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...colDark);
+        doc.text('NOTLAR:', 15, y);
+        y += 6;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        const lines = doc.splitTextToSize(txt, pw - 30);
+
+        doc.setFillColor(250, 250, 250);
+        doc.setDrawColor(230, 230, 230);
+        const boxH = Math.max(15, lines.length * 5 + 10);
+        doc.rect(15, y, pw - 30, boxH, 'FD');
+
+        doc.setTextColor(50, 50, 50);
+        doc.text(lines, 20, y + 6);
+        y += boxH + 15;
+    } else {
+        y += 10;
+    }
+
+    // === SIGNATURES ===
+    if (y > ph - 60) { doc.addPage(); y = 20; }
+
+    const bottomY = Math.max(y, ph - 70);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+
+    // Left: DozaTech
+    doc.setTextColor(...colDark);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DozaTech Teknik Servis', 30, bottomY + 5, { align: 'center' });
+    doc.text('Imza', 30, bottomY + 35, { align: 'center' });
+    doc.line(15, bottomY + 40, 60, bottomY + 40);
+
+    // Right: Customer
+    doc.text('Musteri Onay', pw - 45, bottomY + 5, { align: 'center' });
+    doc.text('Imza', pw - 45, bottomY + 35, { align: 'center' });
+    doc.line(pw - 80, bottomY + 40, pw - 15, bottomY + 40);
+
+    // === FOOTER ===
+    doc.setFillColor(...colDark);
+    doc.rect(0, ph - 15, pw, 15, 'F');
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
+    doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
 
     const fn = customer ? 'servis_' + convertTurkish(customer.name).replace(/\s+/g, '_') + '_' + date.replace(/\./g, '-') + '.pdf' : 'servis_' + date.replace(/\./g, '-') + '.pdf';
     return { blob: doc.output('blob'), fileName: fn };
@@ -329,40 +440,66 @@ function handleSavePDF() {
     showToast('PDF oluşturuluyor...');
     try {
         const { blob, fileName } = generatePDFBlob();
+
+        // Always download
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = fileName;
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 200);
+
         showToast('PDF indirildi: ' + fileName);
-    } catch (e) {
-        console.error(e);
-        showToast('Hata: ' + e.message);
+        if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+    } catch (error) {
+        console.error('PDF Error:', error);
+        showToast('Hata: ' + error.message);
     }
 }
 
 function handleSendWhatsApp() {
-    if (!selectedCustomerId) { alert('Lütfen önce bir müşteri seçin.'); return; }
+    console.log('WhatsApp clicked');
+
+    if (!selectedCustomerId) {
+        alert('Lütfen önce bir müşteri seçin.');
+        return;
+    }
+
     const customer = customers.find(c => c.id === selectedCustomerId);
     if (!customer) return;
 
-    showToast('Hazırlanıyor...');
+    showToast('WhatsApp hazırlanıyor...');
+
     try {
         const { blob, fileName } = generatePDFBlob();
         const file = new File([blob], fileName, { type: 'application/pdf' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: 'DozaTech Servis - ' + customer.name })
-                .then(() => showToast('Paylaşım tamamlandı!'))
-                .catch(err => { if (err.name !== 'AbortError') sendWhatsAppText(customer, blob, fileName); });
+            navigator.share({
+                files: [file],
+                title: 'DozaTech Servis - ' + customer.name
+            })
+                .then(() => {
+                    showToast('Paylaşım tamamlandı!');
+                })
+                .catch(err => {
+                    if (err.name !== 'AbortError') {
+                        console.log('Share failed, opening WhatsApp...');
+                        sendWhatsAppText(customer, blob, fileName);
+                    }
+                });
         } else {
             sendWhatsAppText(customer, blob, fileName);
         }
-    } catch (e) {
-        console.error(e);
-        showToast('Hata: ' + e.message);
+    } catch (error) {
+        console.error('WhatsApp Error:', error);
+        showToast('Hata: ' + error.message);
     }
 }
 
@@ -378,7 +515,7 @@ function sendWhatsAppText(customer, blob, fileName) {
 
     showToast('PDF indirildi, WhatsApp açılıyor...');
 
-    // Only send notes, not full form
+    // Only send notes
     let msg = '';
     if (generalNotes.value.trim()) {
         msg = generalNotes.value.trim();
