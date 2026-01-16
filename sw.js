@@ -1,6 +1,6 @@
 // Service Worker for Servis Formu PWA
 
-const CACHE_NAME = 'servis-formu-v5'; // Versiyon güncellendi v5
+const CACHE_NAME = 'servis-formu-v6'; // Versiyon güncellendi v6 - NetworkFirst
 const urlsToCache = [
     '/',
     '/index.html',
@@ -24,32 +24,28 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Fetch event
+// Fetch event - NetworkFirst Strategy
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Return cached version or fetch from network
-                if (response) {
-                    return response;
+        fetch(event.request)
+            .then(networkResponse => {
+                // Check if we received a valid response
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
                 }
-                return fetch(event.request)
-                    .then(response => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
 
-                        // Clone the response
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
+                // Clone and cache the new response
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                    .then(cache => {
+                        cache.put(event.request, responseToCache);
                     });
+
+                return networkResponse;
+            })
+            .catch(() => {
+                // If network fails, return from cache
+                return caches.match(event.request);
             })
     );
 });
