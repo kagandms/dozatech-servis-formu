@@ -1,4 +1,4 @@
-// DozaTech Service Form Application V2.4 (Final Cache Busting)
+// DozaTech Service Form Application V2.5 (Restored Standard Filenames)
 
 const APP_PASSWORD = 'Sam1089071261';
 const loginScreen = document.getElementById('loginScreen');
@@ -590,10 +590,10 @@ function openWA(customer, blob, fileName) {
     setTimeout(() => { window.open('https://wa.me/' + customer.phone + '?text=' + encodeURIComponent(msg), '_blank'); }, 500);
 }
 
-// Global Exports are safer but using registerServiceWorker directly
+// Global Exports
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw-final.js').catch(e => console.log(e));
+        navigator.serviceWorker.register('sw.js').catch(e => console.log(e));
     }
 }
 
