@@ -1,11 +1,9 @@
-// Service Worker for Servis Formu PWA
+// Service Worker for Servis Formu PWA (Single File Edition)
 
-const CACHE_NAME = 'servis-formu-v13-restore'; // Versiyon restored
+const CACHE_NAME = 'servis-formu-v14-single-file';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/styles.css',
-    '/app.js',
     '/manifest.json',
     '/logo.png',
     '/kase.jpg',
@@ -13,7 +11,6 @@ const urlsToCache = [
     '/icons/icon-512.png'
 ];
 
-// Install event
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -25,33 +22,26 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Fetch event - NetworkFirst Strategy
 self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request)
             .then(networkResponse => {
-                // Check if we received a valid response
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
-
-                // Clone and cache the new response
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME)
                     .then(cache => {
                         cache.put(event.request, responseToCache);
                     });
-
                 return networkResponse;
             })
             .catch(() => {
-                // If network fails, return from cache
                 return caches.match(event.request);
             })
     );
 });
 
-// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
