@@ -7,9 +7,10 @@ const appContainer = document.getElementById('appContainer');
 const loginBtn = document.getElementById('loginBtn');
 const loginPassword = document.getElementById('loginPassword');
 const loginError = document.getElementById('loginError');
+const rememberMe = document.getElementById('rememberMe');
 
-// Check if already logged in
-if (sessionStorage.getItem('dozatech_auth') === 'true') {
+// Check if already logged in (Local Storage OR Session Storage)
+if (localStorage.getItem('dozatech_auth_permanent') === 'true' || sessionStorage.getItem('dozatech_auth') === 'true') {
     if (loginScreen) loginScreen.classList.add('hidden');
     if (appContainer) appContainer.style.display = 'block';
 }
@@ -26,7 +27,13 @@ if (loginPassword) {
 function handleLogin() {
     const pwd = loginPassword.value;
     if (pwd === APP_PASSWORD) {
+        // Save auth state
         sessionStorage.setItem('dozatech_auth', 'true');
+
+        if (rememberMe && rememberMe.checked) {
+            localStorage.setItem('dozatech_auth_permanent', 'true');
+        }
+
         loginScreen.classList.add('hidden');
         appContainer.style.display = 'block';
         loginError.textContent = '';
