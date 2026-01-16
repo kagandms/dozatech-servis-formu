@@ -271,6 +271,16 @@
             gap: 16px;
         }
 
+        /* FIX: Dozaj kontrol için flexbox uyumu */
+        #pumpsSection .counter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: nowrap;
+            gap: 10px;
+        }
+
         .control-btn {
             width: 40px;
             height: 40px;
@@ -350,6 +360,14 @@
             padding-bottom: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* FIX: Number badge removed */
+        .machine-number {
+            display: none;
         }
 
         .checklist {
@@ -536,6 +554,19 @@
             .machines-container {
                 padding: 0 5px;
             }
+
+            .counter-header {
+                flex-wrap: nowrap;
+                gap: 10px;
+            }
+
+            .counter-title h2 {
+                font-size: 0.95rem;
+            }
+
+            .icon-box {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -658,6 +689,7 @@
         const loginError = document.getElementById('loginError');
         const rememberMe = document.getElementById('rememberMe');
 
+        // Initial Auth Check
         if (localStorage.getItem('dozatech_auth_permanent') === 'true' || sessionStorage.getItem('dozatech_auth') === 'true') {
             if (loginScreen) loginScreen.classList.add('hidden');
             if (appContainer) appContainer.style.display = 'block';
@@ -675,10 +707,14 @@
         function handleLogin() {
             const pwd = loginPassword.value;
             if (pwd === APP_PASSWORD) {
+                // Sadece oturum süresince hatırla (varsayılan)
                 sessionStorage.setItem('dozatech_auth', 'true');
+
+                // Eğer beni hatırla seçiliyse kalıcı hatırla
                 if (rememberMe && rememberMe.checked) {
                     localStorage.setItem('dozatech_auth_permanent', 'true');
                 }
+
                 loginScreen.classList.add('hidden');
                 appContainer.style.display = 'block';
                 loginError.textContent = '';
@@ -811,7 +847,7 @@
             editCustomerModal.addEventListener('click', e => { if (e.target === editCustomerModal) editCustomerModal.style.display = 'none'; });
         }
 
-        // --- LOGIC FUNCTIONS (Same as before) ---
+        // --- LOGIC FUNCTIONS ---
         function loadState() {
             try {
                 const saved = localStorage.getItem('dozatech_state_v3');
@@ -861,7 +897,6 @@
 
                 let html = `
                 <div class="machine-header">
-                    <span class="machine-number">${i}</span>
                     <span class="machine-title">Bulaşık Makinesi ${i}</span>
                 </div>
                 <div class="checklist">`;
@@ -906,7 +941,6 @@
 
                 let html = `
                 <div class="machine-header">
-                    <span class="machine-number" style="background:var(--accent-color)">${i}</span>
                     <span class="machine-title">Dozaj Pompası ${i}</span>
                 </div>
                 <div class="checklist">`;
@@ -1094,6 +1128,7 @@
             const time = new Date().toLocaleTimeString('tr-TR');
             const pw = doc.internal.pageSize.width;
             const ph = doc.internal.pageSize.height;
+            // FIX: PDF Colors match BG (#0a0a14 = 10,10,20)
             const colDark = [10, 10, 20];
             const colPrimary = [76, 201, 240];
             const colAccent = [67, 97, 238];
@@ -1119,20 +1154,9 @@
             doc.setTextColor(...colPrimary); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
             doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
             doc.setDrawColor(...colPrimary); doc.setLineWidth(0.5); doc.line(15, 45, pw - 15, 45);
-            y = 60;
 
-            // CUSTOMER
-            if (customer) {
-                doc.setDrawColor(...colAccent); doc.setLineWidth(0.3);
-                doc.setFillColor(250, 250, 255); doc.roundedRect(15, y, pw - 30, 25, 2, 2, 'FD');
-                doc.setFillColor(...colAccent); doc.circle(24, y + 12, 5, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.text('M', 24, y + 13.5, { align: 'center' });
-                doc.setTextColor(...colDark); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-                doc.text(convertTurkish(customer.name), 34, y + 10);
-                doc.setTextColor(100, 100, 100); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-                doc.text(customer.phone, 34, y + 18);
-                y += 35;
-            } else { y += 10; }
+            // FIX: Remove Customer Box, just add space
+            y = 60;
 
             // DISHWASHER
             if (machineCount > 0) {
@@ -1144,11 +1168,15 @@
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colPrimary); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
                     doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+                    // FIX: Remove '1' prefix
                     doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
-                    y += 12;
+                    y += 12; // Title height
+
                     const state = machineStates[i] || {};
                     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
                     let xPos = 20;
+                    // FIX: Distance between title and items is ok (y += 12), let's keep or increase slightly
+
                     checklistItems.forEach((item, index) => {
                         const status = state[item.id];
                         doc.setFillColor(255, 255, 255);
@@ -1179,8 +1207,10 @@
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colAccent); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+                    // FIX: Remove '1' prefix
                     doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
-                    y += 12;
+                    y += 15; // FIX: Increased distance (was 12)
+
                     const state = pumpStates[i] || {};
                     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
                     let xPos = 20;
@@ -1220,6 +1250,8 @@
             const bottomY = Math.max(y, ph - 80);
             doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
             doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
+
+            // Stamp
             const stampData = getImageDataUrl('#kaseImage');
             if (stampData) {
                 try {
@@ -1229,12 +1261,19 @@
                     doc.addImage(stampData, 'JPEG', 20, bottomY + 8, sW, sH);
                 } catch (e) { }
             } else { doc.text('Imza / Kase', 40, bottomY + 30, { align: 'center' }); }
+
             doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
+
+            // FIX: Customer Name BELOW signature area
             if (customer) {
                 doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 30, { align: 'center' });
+                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 42, { align: 'center' });
+                // Phone is optional or can be added below
+                // doc.text(customer.phone, pw - 45, bottomY + 47, { align: 'center' });
             }
             doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
+
+            // FOOTER
             doc.setFillColor(...colDark); doc.rect(0, ph - 15, pw, 15, 'F');
             doc.setTextColor(150, 150, 150); doc.setFontSize(8);
             const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
