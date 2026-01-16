@@ -1,7 +1,7 @@
 // DozaTech Service Form Application
 
 // === PASSWORD PROTECTION ===
-const APP_PASSWORD = 'dozatech2026'; // Şifreyi buradan değiştirebilirsiniz
+const APP_PASSWORD = 'Sam1089071261'; // Şifreyi buradan değiştirebilirsiniz
 const loginScreen = document.getElementById('loginScreen');
 const appContainer = document.getElementById('appContainer');
 const loginBtn = document.getElementById('loginBtn');
