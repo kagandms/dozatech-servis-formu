@@ -1155,7 +1155,6 @@
             doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
             doc.setDrawColor(...colPrimary); doc.setLineWidth(0.5); doc.line(15, 45, pw - 15, 45);
 
-            // FIX: Remove Customer Box, just add space
             y = 60;
 
             // DISHWASHER
@@ -1168,20 +1167,18 @@
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colPrimary); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
                     doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    // FIX: Remove '1' prefix
                     doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
-                    y += 12; // Title height
+                    y += 15; // FIX: Increased distance (same as Pump)
 
                     const state = machineStates[i] || {};
                     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
                     let xPos = 20;
-                    // FIX: Distance between title and items is ok (y += 12), let's keep or increase slightly
 
                     checklistItems.forEach((item, index) => {
                         const status = state[item.id];
                         doc.setFillColor(255, 255, 255);
-                        if (status === 'ok') doc.setFillColor(46, 204, 113);
-                        if (status === 'fail') doc.setFillColor(239, 71, 111);
+                        if (status === 'ok') doc.setFillColor(46, 204, 113); // Green
+                        if (status === 'fail') doc.setFillColor(239, 71, 111); // Red
                         if (status) {
                             doc.circle(xPos + 2, y - 1, 3, 'F'); doc.setTextColor(255, 255, 255); doc.setFontSize(7);
                             const mark = status === 'ok' ? 'V' : 'X'; doc.text(mark, xPos + 2, y, { align: 'center' });
@@ -1189,9 +1186,10 @@
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
                         doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
-                        if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 6; }
+                        // FIX: Increased row spacing to avoid "dip dibe" look
+                        if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
-                    if (checklistItems.length % 2 !== 0) y += 6; y += 8;
+                    if (checklistItems.length % 2 !== 0) y += 8; y += 10;
                 }
                 y += 10;
             }
@@ -1207,9 +1205,8 @@
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colAccent); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    // FIX: Remove '1' prefix
                     doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
-                    y += 15; // FIX: Increased distance (was 12)
+                    y += 15;
 
                     const state = pumpStates[i] || {};
                     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
@@ -1226,9 +1223,10 @@
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
                         doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
-                        if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 6; }
+                        // FIX: Increased row spacing
+                        if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
-                    if (pumpChecklistItems.length % 2 !== 0) y += 6; y += 8;
+                    if (pumpChecklistItems.length % 2 !== 0) y += 8; y += 10;
                 }
             }
 
@@ -1264,14 +1262,15 @@
 
             doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
 
-            // FIX: Customer Name BELOW signature area
+            // FIX: Customer Name moved UP closer to signature area
             if (customer) {
                 doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 42, { align: 'center' });
-                // Phone is optional or can be added below
-                // doc.text(customer.phone, pw - 45, bottomY + 47, { align: 'center' });
+                // bottomY + 5 is "Musteri" text. Stamp height is roughly 25-30. 
+                // Let's put it at bottomY + 35 instead of 42
+                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 35, { align: 'center' });
             }
-            doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
+            // FIX: Removed the line
+            // doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
 
             // FOOTER
             doc.setFillColor(...colDark); doc.rect(0, ph - 15, pw, 15, 'F');

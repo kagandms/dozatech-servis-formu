@@ -1,6 +1,6 @@
 // Service Worker for Servis Formu PWA (Single File Edition)
 
-const CACHE_NAME = 'servis-formu-v15-ui-fix';
+const CACHE_NAME = 'servis-formu-v16-pdf-spacing';
 const urlsToCache = [
     '/',
     '/index.html',
