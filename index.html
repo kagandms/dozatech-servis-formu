@@ -18,7 +18,19 @@
 </head>
 
 <body>
-    <div class="app-container">
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <img src="logo.png" alt="DozaTech" class="login-logo">
+            <h2>Giriş Yap</h2>
+            <input type="password" id="loginPassword" class="input-field" placeholder="Şifre"
+                autocomplete="current-password">
+            <button class="login-btn" id="loginBtn">Giriş</button>
+            <p class="login-error" id="loginError"></p>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="display: none;">
         <!-- Logo -->
         <header class="logo-section">
             <div class="logo-container">

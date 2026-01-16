@@ -1,5 +1,44 @@
 // DozaTech Service Form Application
 
+// === PASSWORD PROTECTION ===
+const APP_PASSWORD = 'dozatech2026'; // Şifreyi buradan değiştirebilirsiniz
+const loginScreen = document.getElementById('loginScreen');
+const appContainer = document.getElementById('appContainer');
+const loginBtn = document.getElementById('loginBtn');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+
+// Check if already logged in
+if (sessionStorage.getItem('dozatech_auth') === 'true') {
+    if (loginScreen) loginScreen.classList.add('hidden');
+    if (appContainer) appContainer.style.display = 'block';
+}
+
+if (loginBtn) {
+    loginBtn.addEventListener('click', handleLogin);
+}
+if (loginPassword) {
+    loginPassword.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleLogin();
+    });
+}
+
+function handleLogin() {
+    const pwd = loginPassword.value;
+    if (pwd === APP_PASSWORD) {
+        sessionStorage.setItem('dozatech_auth', 'true');
+        loginScreen.classList.add('hidden');
+        appContainer.style.display = 'block';
+        loginError.textContent = '';
+    } else {
+        loginError.textContent = 'Yanlış şifre!';
+        loginPassword.value = '';
+        if (navigator.vibrate) navigator.vibrate(100);
+    }
+}
+
+// === END PASSWORD PROTECTION ===
+
 // PWA Install handling
 let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
@@ -321,6 +360,7 @@ function handleSendWhatsApp() {
 }
 
 function sendWhatsAppText(customer, blob, fileName) {
+    // Download PDF
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -331,16 +371,13 @@ function sendWhatsAppText(customer, blob, fileName) {
 
     showToast('PDF indirildi, WhatsApp açılıyor...');
 
-    let msg = '*DozaTech Servis*\n' + new Date().toLocaleDateString('tr-TR') + '\n\n';
-    msg += 'Müşteri: ' + customer.name + '\n';
-    msg += 'Makine: ' + machineCount + '\n\n';
-    for (let i = 1; i <= machineCount; i++) {
-        msg += 'Makine ' + i + ':\n';
-        const st = machineStates[i] || {};
-        checklistItems.forEach(it => { msg += (st[it.id] ? '✓ ' : '○ ') + it.label + '\n'; });
-        msg += '\n';
+    // Only send notes, not full form
+    let msg = '';
+    if (generalNotes.value.trim()) {
+        msg = generalNotes.value.trim();
+    } else {
+        msg = 'Servis formu ekte.';
     }
-    if (generalNotes.value.trim()) msg += 'Not: ' + generalNotes.value;
 
     setTimeout(() => { window.open('https://wa.me/' + customer.phone + '?text=' + encodeURIComponent(msg), '_blank'); }, 500);
 }
