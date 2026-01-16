@@ -3,35 +3,38 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a14">
-    <meta name="description" content="DozaTech Bulaşık Makinesi Servis Formu">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Dozatech Servis">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dozatech Servis Formu</title>
-    <link rel="stylesheet" href="styles-v2.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dozatech Servis Formu">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <link rel="stylesheet" href="styles-final.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
-    <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
+    <div id="loginScreen" class="login-screen">
         <div class="login-box">
-            <img src="logo.png" alt="DozaTech" class="login-logo">
-            <h2>Giriş Yap</h2>
-            <input type="password" id="loginPassword" class="input-field" placeholder="Şifre"
-                autocomplete="current-password">
-            <button class="login-btn" id="loginBtn">Giriş</button>
-            <p class="login-error" id="loginError"></p>
+            <div class="login-logo">
+                <img src="logo.png" alt="DozaTech">
+            </div>
+            <h2>Servis Formu Giriş</h2>
+            <input type="password" id="loginPassword" placeholder="Şifreniz" autocomplete="current-password">
+            <div class="remember-me-container">
+                <input type="checkbox" id="rememberMe" class="remember-checkbox">
+                <label for="rememberMe" class="remember-label">Beni Hatırla</label>
+            </div>
+            <button id="loginBtn">Giriş Yap</button>
+            <p id="loginError" class="error-msg"></p>
         </div>
     </div>
 
-    <div class="app-container" id="appContainer" style="display: none;">
-        <!-- Logo -->
+    <div class="container" id="appContainer" style="display: none;">
         <header class="logo-section">
             <div class="logo-container">
                 <img src="logo.png" alt="DozaTech" class="logo-image">
@@ -39,96 +42,92 @@
             </div>
         </header>
 
-        <!-- Main Form -->
-        <main class="form-container">
-            <!-- Top Row: Customer & Counter side by side -->
-            <div class="top-row">
-                <!-- Customer Selection -->
-                <section class="customer-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Müşteri</h2>
-                        <button class="icon-btn" id="manageCustomersBtn" aria-label="Müşteri Yönetimi">⚙️</button>
-                    </div>
-                    <select id="customerSelect" class="customer-select">
-                        <option value="">-- Seçin --</option>
-                    </select>
-                </section>
+        <section class="customer-section">
+            <h2>Müşteri Seçimi</h2>
+            <div class="customer-controls">
+                <select id="customerSelect">
+                    <option value="">-- Seçin --</option>
+                </select>
+                <button id="manageCustomersBtn" class="secondary-btn">Yönet</button>
+            </div>
+        </section>
 
-                <!-- Machine Counter -->
-                <section class="counter-section">
-                    <h2 class="section-title">Makine Sayısı</h2>
-                    <div class="counter-controls">
-                        <button class="counter-btn minus" id="decreaseBtn" aria-label="Azalt"><span>−</span></button>
-                        <span class="counter-value" id="machineCount">0</span>
-                        <button class="counter-btn plus" id="increaseBtn" aria-label="Arttır"><span>+</span></button>
-                    </div>
-                </section>
+        <!-- Dynamic Counter Section -->
+        <div class="counter-section">
+            <div class="counter-header">
+                <div class="counter-title">
+                    <div class="icon-box">🍽️</div>
+                    <h2>Bulaşık Makinesi</h2>
+                </div>
+                <div class="counter-controls">
+                    <button class="control-btn" id="decreaseBtn" disabled>−</button>
+                    <span class="count-display" id="machineCount">0</span>
+                    <button class="control-btn" id="increaseBtn">+</button>
+                </div>
             </div>
 
-            <!-- Machines Container -->
-            <div id="machinesContainer" class="machines-container"></div>
+            <div class="machines-container" id="machinesContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🍽️</div>
+                    <p class="empty-state-text">Bulaşık Makinesi eklemek için + tıklayın</p>
+                </div>
+            </div>
+        </div>
 
-            <!-- Notes -->
-            <section class="notes-section">
-                <h2 class="section-title">Notlar</h2>
-                <textarea id="generalNotes" class="notes-textarea" placeholder="Yapılan işlemler hakkında not..."
-                    rows="3"></textarea>
-            </section>
+        <section class="notes-section">
+            <h2>Genel Notlar</h2>
+            <textarea id="generalNotes" placeholder="Buraya genel notlarınızı yazabilirsiniz..."></textarea>
+        </section>
 
-            <!-- Action Buttons -->
-            <section class="action-buttons">
-                <button class="action-btn save-btn" id="saveBtn">
-                    <span class="btn-icon">💾</span>
-                    <span class="btn-text">PDF Kaydet</span>
-                </button>
-                <button class="action-btn send-btn" id="sendBtn">
-                    <span class="btn-icon">📲</span>
-                    <span class="btn-text">WhatsApp</span>
-                </button>
-            </section>
-        </main>
+        <div class="action-buttons">
+            <button id="saveBtn" class="primary-btn">
+                <span>PDF İndir</span>
+            </button>
+            <button id="sendBtn" class="whatsapp-btn">
+                <span>WhatsApp Gönder</span>
+            </button>
+        </div>
 
-        <footer class="app-footer">
-            <p>© 2026 DozaTech</p>
+        <footer>
+            <p>© 2024 DozaTech - Endüstriyel Mutfak Çözümleri</p>
         </footer>
     </div>
 
-    <!-- Customer Modal -->
-    <div class="modal-overlay" id="customerModal">
-        <div class="modal">
+    <!-- Modals -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Müşteri Yönetimi</h3>
-                <button class="modal-close" id="closeModalBtn">&times;</button>
+                <h3>Müşteri Yönetimi</h3>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="add-customer-form">
-                    <input type="text" id="customerName" class="input-field" placeholder="Müşteri Adı">
-                    <input type="tel" id="customerPhone" class="input-field" placeholder="Telefon (5XXXXXXXXX)">
-                    <button class="add-btn" id="addCustomerBtn"><span>➕</span> Ekle</button>
-                </div>
-                <div class="customer-list" id="customerList"></div>
+            <div class="add-customer-form">
+                <input type="text" id="customerName" placeholder="Müşteri Adı">
+                <input type="tel" id="customerPhone" placeholder="Telefon (5XX...)">
+                <button id="addCustomerBtn">Ekle</button>
+            </div>
+            <div id="customerList" class="customer-list">
+                <!-- Customers will be listed here -->
             </div>
         </div>
     </div>
 
-    <!-- Edit Customer Modal -->
-    <div class="modal-overlay" id="editCustomerModal">
-        <div class="modal">
+    <div id="editCustomerModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Müşteri Düzenle</h3>
-                <button class="modal-close" id="closeEditModalBtn">&times;</button>
+                <h3>Müşteri Düzenle</h3>
+                <button id="closeEditModalBtn" class="close-btn">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="add-customer-form">
                 <input type="hidden" id="editCustomerId">
-                <input type="text" id="editCustomerName" class="input-field" placeholder="Müşteri Adı">
-                <input type="tel" id="editCustomerPhone" class="input-field" placeholder="Telefon">
-                <button class="save-customer-btn" id="saveEditCustomerBtn"><span>✓</span> Kaydet</button>
+                <input type="text" id="editCustomerName" placeholder="Müşteri Adı">
+                <input type="tel" id="editCustomerPhone" placeholder="Telefon (5XX...)">
+                <button id="saveEditCustomerBtn" class="primary-btn">Kaydet</button>
             </div>
         </div>
     </div>
 
-    <!-- Font script removed to prevent crash -->
-    <script src="app-v2.js"></script>
+    <!-- Final JS Reference -->
+    <script src="app-final.js"></script>
 </body>
 
 </html>

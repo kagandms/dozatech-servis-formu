@@ -1,4 +1,4 @@
-// DozaTech Service Form Application V2.3 (Emergency Fix: Removed Custom Font)
+// DozaTech Service Form Application V2.4 (Final Cache Busting)
 
 const APP_PASSWORD = 'Sam1089071261';
 const loginScreen = document.getElementById('loginScreen');
@@ -588,6 +588,13 @@ function openWA(customer, blob, fileName) {
 
     const msg = customer.name;
     setTimeout(() => { window.open('https://wa.me/' + customer.phone + '?text=' + encodeURIComponent(msg), '_blank'); }, 500);
+}
+
+// Global Exports are safer but using registerServiceWorker directly
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw-final.js').catch(e => console.log(e));
+    }
 }
 
 // Global Exports
