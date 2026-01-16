@@ -481,10 +481,11 @@ function handleSendWhatsApp() {
         const file = new File([blob], fileName, { type: 'application/pdf' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            const noteText = generalNotes.value.trim() || 'Servis formu ekte.';
             navigator.share({
                 files: [file],
-                title: 'DozaTech Servis - ' + customer.name,
-                text: generalNotes.value.trim() || 'Servis formu ekte.'
+                title: noteText,
+                text: noteText
             })
                 .then(() => {
                     showToast('Paylaşım tamamlandı!');

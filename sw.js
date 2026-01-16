@@ -1,6 +1,6 @@
 // Service Worker for Servis Formu PWA
 
-const CACHE_NAME = 'servis-formu-v4'; // Versiyon güncellendi v4
+const CACHE_NAME = 'servis-formu-v5'; // Versiyon güncellendi v5
 const urlsToCache = [
     '/',
     '/index.html',
