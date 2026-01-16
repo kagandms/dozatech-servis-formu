@@ -1265,9 +1265,8 @@
             // FIX: Customer Name moved UP closer to signature area
             if (customer) {
                 doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-                // bottomY + 5 is "Musteri" text. Stamp height is roughly 25-30. 
-                // Let's put it at bottomY + 35 instead of 42
-                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 35, { align: 'center' });
+                // bottomY + 5 is "Musteri" text. Changed to +15 to be much closer as requested
+                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 15, { align: 'center' });
             }
             // FIX: Removed the line
             // doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
