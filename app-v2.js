@@ -1,6 +1,5 @@
-// DozaTech Service Form Application V2.2
+// DozaTech Service Form Application V2.3 (Emergency Fix: Removed Custom Font)
 
-// === PASSWORD PROTECTION ===
 const APP_PASSWORD = 'Sam1089071261';
 const loginScreen = document.getElementById('loginScreen');
 const appContainer = document.getElementById('appContainer');
@@ -40,9 +39,7 @@ function handleLogin() {
         if (navigator.vibrate) navigator.vibrate(100);
     }
 }
-// === END PASSWORD PROTECTION ===
 
-// PWA Install handling
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
@@ -95,7 +92,7 @@ const editCustomerNameInput = document.getElementById('editCustomerName');
 const editCustomerPhoneInput = document.getElementById('editCustomerPhone');
 const customerListContainer = document.getElementById('customerList');
 
-// Dynamic elements (Dosage Pump)
+// Dynamic elements
 let decreasePumpBtn, increasePumpBtn, pumpCountDisplay, pumpsContainer;
 
 function init() {
@@ -237,14 +234,9 @@ function renderCustomerSelect() {
     customerSelect.innerHTML = html;
 }
 
-// === FONT SUPPORT ===
-// Don't convert Turkish chars if custom font is loaded
+// === SAFE MODE: CHARACTER MAPPING ===
 function convertTurkish(t) {
     if (!t) return '';
-    // If we have custom font, return as is. The font will handle it.
-    if (window.pdfFont) return t;
-
-    // Fallback if font fails
     return t.replace(/ı/g, 'i').replace(/İ/g, 'I')
         .replace(/ş/g, 's').replace(/Ş/g, 'S')
         .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
@@ -264,8 +256,7 @@ function getImageDataUrl(selector) {
         ctx.drawImage(img, 0, 0);
         return canvas.toDataURL('image/png');
     } catch (e) {
-        console.error('Image conversion error:', e);
-        return null;
+        return null; // Ignore errors
     }
 }
 
@@ -273,20 +264,8 @@ function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // LOAD CUSTOM FONT
-    if (window.pdfFont) {
-        try {
-            doc.addFileToVFS('Arimo-Regular.ttf', window.pdfFont);
-            doc.addFont('Arimo-Regular.ttf', 'Arimo', 'normal');
-            doc.setFont('Arimo'); // Set global font
-            console.log('Custom font loaded successfully');
-        } catch (e) {
-            console.error('Font loading failed', e);
-            doc.setFont('helvetica'); // Fallback
-        }
-    } else {
-        doc.setFont('helvetica');
-    }
+    // Using Standard Helvetica
+    doc.setFont('helvetica');
 
     const customer = customers.find(c => c.id === selectedCustomerId);
     const date = new Date().toLocaleDateString('tr-TR');
@@ -322,12 +301,12 @@ function generatePDFBlob() {
     // Title
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
-    // doc.setFont('helvetica', 'bold'); // Inherit Arimo
+    doc.setFont('helvetica', 'bold');
     doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
 
     doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
-    // doc.setFont('helvetica', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
 
     doc.setDrawColor(...colPrimary);
@@ -349,11 +328,11 @@ function generatePDFBlob() {
         doc.text('M', 24, y + 13.5, { align: 'center' });
         doc.setTextColor(...colDark);
         doc.setFontSize(12);
-        // doc.setFont('helvetica', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text(convertTurkish(customer.name), 34, y + 10);
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
-        // doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'normal');
         doc.text(customer.phone, 34, y + 18);
         y += 35;
     } else {
@@ -364,7 +343,7 @@ function generatePDFBlob() {
     if (machineCount > 0) {
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        // doc.setFont('helvetica', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text(`BULASIK MAKINELERI (${machineCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -377,14 +356,14 @@ function generatePDFBlob() {
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(...colDark);
             doc.setFontSize(10);
-            // doc.setFont('helvetica', 'bold');
+            doc.setFont('helvetica', 'bold');
             doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
 
             y += 12;
 
             const state = machineStates[i] || {};
             doc.setFontSize(9);
-            // doc.setFont('helvetica', 'normal');
+            doc.setFont('helvetica', 'normal');
 
             let xPos = 20;
 
@@ -429,7 +408,7 @@ function generatePDFBlob() {
         if (y > 230) { doc.addPage(); y = 20; }
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        // doc.setFont('helvetica', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text(`DOZAJ POMPALARI (${pumpCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -442,14 +421,14 @@ function generatePDFBlob() {
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
-            // doc.setFont('helvetica', 'bold');
+            doc.setFont('helvetica', 'bold');
             doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
 
             y += 12;
 
             const state = pumpStates[i] || {};
             doc.setFontSize(9);
-            // doc.setFont('helvetica', 'normal');
+            doc.setFont('helvetica', 'normal');
 
             let xPos = 20;
 
@@ -491,12 +470,12 @@ function generatePDFBlob() {
     if (generalNotes.value.trim()) {
         if (y > 220) { doc.addPage(); y = 20; }
         const txt = convertTurkish(generalNotes.value);
-        // doc.setFont('helvetica', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.setTextColor(...colDark);
         doc.text('NOTLAR:', 15, y);
         y += 6;
-        // doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(txt, pw - 30);
         doc.setFillColor(250, 250, 250);
@@ -517,7 +496,7 @@ function generatePDFBlob() {
     // Left: DozaTech + Stamp
     doc.setTextColor(...colDark);
     doc.setFontSize(10);
-    // doc.setFont('helvetica', 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
     // Stamp
@@ -537,7 +516,7 @@ function generatePDFBlob() {
     // Right: Customer
     doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
     if (customer) {
-        // doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.text(convertTurkish(customer.name), pw - 45, bottomY + 30, { align: 'center' });
     }
@@ -550,7 +529,6 @@ function generatePDFBlob() {
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(8);
     // Filename: servisformu_...
-    // Also use convertTurkish here for filename safety
     const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
     const fn = `servisformu_${safeName}_${date.replace(/\./g, '-')}.pdf`;
 
