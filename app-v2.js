@@ -186,9 +186,7 @@ function renderCustomerSelect() {
 }
 
 function convertTurkish(t) {
-    return t.replace(/ı/g, 'i').replace(/İ/g, 'I').replace(/ş/g, 's').replace(/Ş/g, 'S')
-        .replace(/ğ/g, 'g').replace(/Ğ/g, 'G').replace(/ü/g, 'u').replace(/Ü/g, 'U')
-        .replace(/ö/g, 'o').replace(/Ö/g, 'O').replace(/ç/g, 'c').replace(/Ç/g, 'C');
+    return t;
 }
 
 // Helpers for Images
@@ -211,6 +209,14 @@ function getImageDataUrl(selector) {
 function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+
+    // Turkish Font Support
+    if (window.robotoFont) {
+        doc.addFileToVFS('Roboto-Regular.ttf', window.robotoFont);
+        doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+        doc.setFont('Roboto');
+    }
+
     const customer = customers.find(c => c.id === selectedCustomerId);
     const date = new Date().toLocaleDateString('tr-TR');
     const time = new Date().toLocaleTimeString('tr-TR');
@@ -246,12 +252,12 @@ function generatePDFBlob() {
     // Title & Date
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
+    if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
     doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
 
     doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    // Inherit font
     doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
 
     doc.setDrawColor(...colPrimary);
@@ -273,11 +279,11 @@ function generatePDFBlob() {
         doc.text('M', 24, y + 13.5, { align: 'center' });
         doc.setTextColor(...colDark);
         doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
+        if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
         doc.text(convertTurkish(customer.name), 34, y + 10);
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        // Inherit font (Roboto normal)
         doc.text(customer.phone, 34, y + 18);
         y += 35;
     } else {
@@ -287,7 +293,7 @@ function generatePDFBlob() {
     // === MACHINES ===
     doc.setTextColor(...colDark);
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
+    if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
     doc.text(`TOPLAM ${machineCount} MAKINE KONTROL EDILDI`, 15, y);
     doc.setDrawColor(...colPrimary);
     doc.line(15, y + 3, 100, y + 3);
@@ -300,14 +306,14 @@ function generatePDFBlob() {
         doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
         doc.setTextColor(...colDark);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
+        if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
         doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
 
         y += 12;
 
         const state = machineStates[i] || {};
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
+        // Inherit font (Roboto normal)
 
         let xPos = 20;
         let startY = y;
@@ -351,12 +357,12 @@ function generatePDFBlob() {
     if (generalNotes.value.trim()) {
         if (y > 220) { doc.addPage(); y = 20; }
         const txt = convertTurkish(generalNotes.value);
-        doc.setFont('helvetica', 'bold');
+        if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.setTextColor(...colDark);
         doc.text('NOTLAR:', 15, y);
         y += 6;
-        doc.setFont('helvetica', 'normal');
+        // Inherit font (Roboto normal)
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(txt, pw - 30);
         doc.setFillColor(250, 250, 250);
@@ -377,7 +383,7 @@ function generatePDFBlob() {
     // Left: DozaTech + Stamp
     doc.setTextColor(...colDark);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
+    if (window.robotoFont) doc.setFont('Roboto'); else doc.setFont('helvetica', 'bold');
     doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
     // Stamp Image
@@ -397,7 +403,7 @@ function generatePDFBlob() {
     // Right: Customer
     doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
     if (customer) {
-        doc.setFont('helvetica', 'normal');
+        // Inherit font
         doc.setFontSize(9);
         doc.text(convertTurkish(customer.name), pw - 45, bottomY + 30, { align: 'center' });
     }
@@ -409,7 +415,7 @@ function generatePDFBlob() {
     doc.rect(0, ph - 15, pw, 15, 'F');
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
+    // Inherit font
     const fn = customer ? 'servis_' + convertTurkish(customer.name).replace(/\s+/g, '_') + '_' + date.replace(/\./g, '-') + '.pdf' : 'servis_' + date.replace(/\./g, '-') + '.pdf';
     doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
     doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
@@ -445,7 +451,7 @@ function handleSendWhatsApp() {
         const file = new File([blob], fileName, { type: 'application/pdf' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            const noteText = generalNotes.value.trim() || 'Servis formu ekte.';
+            const noteText = customer.name; // Use customer name as message
             navigator.share({
                 files: [file],
                 title: noteText,
@@ -465,7 +471,12 @@ function openWA(customer, blob, fileName) {
     document.body.appendChild(a); a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
 
-    const msg = generalNotes.value.trim() || 'Servis formu ekte.';
+    // Fallback message also changed to customer name? Or keep notes?
+    // User asked "pdfin içinde yazılan notu orda istemiştim onun yerine secile müsterinin ismi olsun"
+    // So for desktop fallback, we should also use customer name?
+    // Usually desktop WhatsApp opening uses "text" param.
+    // Let's use customer name there too.
+    const msg = customer.name;
     setTimeout(() => { window.open('https://wa.me/' + customer.phone + '?text=' + encodeURIComponent(msg), '_blank'); }, 500);
 }
 
