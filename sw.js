@@ -1,16 +1,18 @@
 // Service Worker for Servis Formu PWA
 
-const CACHE_NAME = 'servis-formu-v9'; // Versiyon güncellendi v9
+const CACHE_NAME = 'servis-formu-v10'; // Versiyon güncellendi v10
 const urlsToCache = [
     '/',
     '/index.html',
-    '/fonts.js',      // Font dosyası eklendi
     '/styles-v2.css',
     '/app-v2.js',
     '/manifest.json',
     '/logo.png',
-    '/kase.jpg', // Kaşe eklendi // Logo eklendi
+    '/kase.jpg',
     '/icons/icon-192.png',
+    '/icons/icon-512.png'
+]; // Kaşe eklendi // Logo eklendi
+'/icons/icon-192.png',
     '/icons/icon-512.png'
 ];
 
