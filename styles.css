@@ -76,6 +76,40 @@ body {
     display: block;
 }
 
+.install-btn {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--success-color), #05b38a);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-fast);
+    animation: pulse 2s infinite;
+}
+
+.install-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(6, 214, 160, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(6, 214, 160, 0);
+    }
+}
+
 /* Top Row - Customer & Counter side by side */
 .top-row {
     display: grid;
