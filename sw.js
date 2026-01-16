@@ -11,9 +11,6 @@ const urlsToCache = [
     '/kase.jpg',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
-]; // Kaşe eklendi // Logo eklendi
-'/icons/icon-192.png',
-    '/icons/icon-512.png'
 ];
 
 // Install event
