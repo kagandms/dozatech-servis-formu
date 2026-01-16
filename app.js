@@ -483,7 +483,8 @@ function handleSendWhatsApp() {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
                 files: [file],
-                title: 'DozaTech Servis - ' + customer.name
+                title: 'DozaTech Servis - ' + customer.name,
+                text: generalNotes.value.trim() || 'Servis formu ekte.'
             })
                 .then(() => {
                     showToast('Paylaşım tamamlandı!');
