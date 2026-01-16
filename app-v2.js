@@ -1,4 +1,4 @@
-// DozaTech Service Form Application V2.1
+// DozaTech Service Form Application V2.2
 
 // === PASSWORD PROTECTION ===
 const APP_PASSWORD = 'Sam1089071261';
@@ -63,10 +63,10 @@ const pumpChecklistItems = [
 ];
 
 let machineCount = 0;
-const machineStates = {}; // { machineId: { itemId: 'ok' | 'fail' | null } }
+const machineStates = {};
 
 let pumpCount = 0;
-const pumpStates = {}; // { pumpId: { itemId: 'ok' | 'fail' | null } }
+const pumpStates = {};
 
 let customers = [];
 let selectedCustomerId = null;
@@ -76,10 +76,6 @@ const decreaseBtn = document.getElementById('decreaseBtn');
 const increaseBtn = document.getElementById('increaseBtn');
 const countDisplay = document.getElementById('machineCount');
 const machinesContainer = document.getElementById('machinesContainer');
-
-// Pump DOM Elements (To be added to HTML, but we reference them here)
-// Dynamic references in init/update
-let decreasePumpBtn, increasePumpBtn, pumpCountDisplay, pumpsContainer;
 
 const generalNotes = document.getElementById('generalNotes');
 const customerSelect = document.getElementById('customerSelect');
@@ -98,6 +94,9 @@ const editCustomerIdInput = document.getElementById('editCustomerId');
 const editCustomerNameInput = document.getElementById('editCustomerName');
 const editCustomerPhoneInput = document.getElementById('editCustomerPhone');
 const customerListContainer = document.getElementById('customerList');
+
+// Dynamic elements (Dosage Pump)
+let decreasePumpBtn, increasePumpBtn, pumpCountDisplay, pumpsContainer;
 
 function init() {
     // Inject Pump HTML if not exists
@@ -123,8 +122,6 @@ function init() {
             </div>
         </div>
         `;
-        // Insert after machinesContainer's parent section (machineSection is not an ID, but counter-section is class)
-        // We will append it after machinesContainer
         machinesContainer.insertAdjacentHTML('afterend', pumpHTML);
     }
 
@@ -240,9 +237,14 @@ function renderCustomerSelect() {
     customerSelect.innerHTML = html;
 }
 
-// Convert Turkish characters to ASCII to avoid font issues
+// === FONT SUPPORT ===
+// Don't convert Turkish chars if custom font is loaded
 function convertTurkish(t) {
     if (!t) return '';
+    // If we have custom font, return as is. The font will handle it.
+    if (window.pdfFont) return t;
+
+    // Fallback if font fails
     return t.replace(/ı/g, 'i').replace(/İ/g, 'I')
         .replace(/ş/g, 's').replace(/Ş/g, 'S')
         .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
@@ -271,8 +273,20 @@ function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // FONT: Removed failed custom font loading. Using Standard Helvetica with convertTurkish mapping.
-    // This is the most stable approach for PDF generation in browser.
+    // LOAD CUSTOM FONT
+    if (window.pdfFont) {
+        try {
+            doc.addFileToVFS('Arimo-Regular.ttf', window.pdfFont);
+            doc.addFont('Arimo-Regular.ttf', 'Arimo', 'normal');
+            doc.setFont('Arimo'); // Set global font
+            console.log('Custom font loaded successfully');
+        } catch (e) {
+            console.error('Font loading failed', e);
+            doc.setFont('helvetica'); // Fallback
+        }
+    } else {
+        doc.setFont('helvetica');
+    }
 
     const customer = customers.find(c => c.id === selectedCustomerId);
     const date = new Date().toLocaleDateString('tr-TR');
@@ -308,12 +322,12 @@ function generatePDFBlob() {
     // Title
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
+    // doc.setFont('helvetica', 'bold'); // Inherit Arimo
     doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
 
     doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    // doc.setFont('helvetica', 'normal');
     doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
 
     doc.setDrawColor(...colPrimary);
@@ -335,11 +349,11 @@ function generatePDFBlob() {
         doc.text('M', 24, y + 13.5, { align: 'center' });
         doc.setTextColor(...colDark);
         doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
+        // doc.setFont('helvetica', 'bold');
         doc.text(convertTurkish(customer.name), 34, y + 10);
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        // doc.setFont('helvetica', 'normal');
         doc.text(customer.phone, 34, y + 18);
         y += 35;
     } else {
@@ -350,7 +364,7 @@ function generatePDFBlob() {
     if (machineCount > 0) {
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
+        // doc.setFont('helvetica', 'bold');
         doc.text(`BULASIK MAKINELERI (${machineCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -363,14 +377,14 @@ function generatePDFBlob() {
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(...colDark);
             doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
+            // doc.setFont('helvetica', 'bold');
             doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
 
             y += 12;
 
             const state = machineStates[i] || {};
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
+            // doc.setFont('helvetica', 'normal');
 
             let xPos = 20;
 
@@ -415,7 +429,7 @@ function generatePDFBlob() {
         if (y > 230) { doc.addPage(); y = 20; }
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
+        // doc.setFont('helvetica', 'bold');
         doc.text(`DOZAJ POMPALARI (${pumpCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -424,18 +438,18 @@ function generatePDFBlob() {
         for (let i = 1; i <= pumpCount; i++) {
             if (y > 230) { doc.addPage(); y = 20; }
 
-            doc.setFillColor(...colAccent); // Different header color for pumps
+            doc.setFillColor(...colAccent);
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
+            // doc.setFont('helvetica', 'bold');
             doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
 
             y += 12;
 
             const state = pumpStates[i] || {};
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
+            // doc.setFont('helvetica', 'normal');
 
             let xPos = 20;
 
@@ -477,12 +491,12 @@ function generatePDFBlob() {
     if (generalNotes.value.trim()) {
         if (y > 220) { doc.addPage(); y = 20; }
         const txt = convertTurkish(generalNotes.value);
-        doc.setFont('helvetica', 'bold');
+        // doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.setTextColor(...colDark);
         doc.text('NOTLAR:', 15, y);
         y += 6;
-        doc.setFont('helvetica', 'normal');
+        // doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(txt, pw - 30);
         doc.setFillColor(250, 250, 250);
@@ -503,7 +517,7 @@ function generatePDFBlob() {
     // Left: DozaTech + Stamp
     doc.setTextColor(...colDark);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
+    // doc.setFont('helvetica', 'bold');
     doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
     // Stamp
@@ -523,7 +537,7 @@ function generatePDFBlob() {
     // Right: Customer
     doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
     if (customer) {
-        doc.setFont('helvetica', 'normal');
+        // doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.text(convertTurkish(customer.name), pw - 45, bottomY + 30, { align: 'center' });
     }
@@ -536,7 +550,10 @@ function generatePDFBlob() {
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(8);
     // Filename: servisformu_...
-    const fn = customer ? 'servisformu_' + convertTurkish(customer.name).replace(/\s+/g, '_') + '_' + date.replace(/\./g, '-') + '.pdf' : 'servisformu_' + date.replace(/\./g, '-') + '.pdf';
+    // Also use convertTurkish here for filename safety
+    const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
+    const fn = `servisformu_${safeName}_${date.replace(/\./g, '-')}.pdf`;
+
     doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
     doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
 
@@ -593,156 +610,6 @@ function openWA(customer, blob, fileName) {
 
     const msg = customer.name;
     setTimeout(() => { window.open('https://wa.me/' + customer.phone + '?text=' + encodeURIComponent(msg), '_blank'); }, 500);
-}
-
-function increaseMachineCount() {
-    machineCount++;
-    if (!machineStates[machineCount]) { machineStates[machineCount] = {}; }
-    updateUI();
-    saveState();
-}
-
-function decreaseMachineCount() {
-    if (machineCount > 0) {
-        delete machineStates[machineCount];
-        machineCount--;
-        updateUI();
-        saveState();
-    }
-}
-
-function increasePumpCount() {
-    pumpCount++;
-    if (!pumpStates[pumpCount]) { pumpStates[pumpCount] = {}; }
-    updatePumpUI();
-    saveState();
-}
-
-function decreasePumpCount() {
-    if (pumpCount > 0) {
-        delete pumpStates[pumpCount];
-        pumpCount--;
-        updatePumpUI();
-        saveState();
-    }
-}
-
-function setCheck(machineId, itemId, status, type = 'machine') {
-    const states = type === 'machine' ? machineStates : pumpStates;
-
-    if (!states[machineId]) states[machineId] = {};
-
-    if (states[machineId][itemId] === status) {
-        states[machineId][itemId] = null;
-    } else {
-        states[machineId][itemId] = status;
-    }
-
-    if (type === 'machine') updateUI(); else updatePumpUI();
-    saveState();
-    if (navigator.vibrate) navigator.vibrate(30);
-}
-
-function updateUI() {
-    countDisplay.textContent = machineCount;
-    decreaseBtn.disabled = machineCount === 0;
-
-    if (machineCount === 0) {
-        machinesContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽️</div><p class="empty-state-text">Bulaşık Makinesi eklemek için + tıklayın</p></div>';
-        return;
-    }
-
-    let html = '';
-    for (let i = 1; i <= machineCount; i++) {
-        const st = machineStates[i] || {};
-        const itemsHtml = checklistItems.map(it => {
-            const val = st[it.id];
-            return `
-            <div class="checklist-item">
-                <span class="checklist-label">${it.label}</span>
-                <div class="checklist-actions">
-                    <button class="check-btn pass ${val === 'ok' ? 'active' : ''}" onclick="setCheck(${i}, '${it.id}', 'ok', 'machine')">✓</button>
-                    <button class="check-btn fail ${val === 'fail' ? 'active' : ''}" onclick="setCheck(${i}, '${it.id}', 'fail', 'machine')">✗</button>
-                </div>
-            </div>`;
-        }).join('');
-
-        html += `<div class="machine-card"><div class="machine-header"><div class="machine-number">${i}</div><h3 class="machine-title">Bulaşık Makinesi ${i}</h3></div><div class="checklist">${itemsHtml}</div></div>`;
-    }
-    machinesContainer.innerHTML = html;
-}
-
-function updatePumpUI() {
-    if (!pumpCountDisplay) return;
-    pumpCountDisplay.textContent = pumpCount;
-    decreasePumpBtn.disabled = pumpCount === 0;
-
-    if (pumpCount === 0) {
-        pumpsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💦</div><p class="empty-state-text">Dozaj Pompası eklemek için + tıklayın</p></div>';
-        return;
-    }
-
-    let html = '';
-    for (let i = 1; i <= pumpCount; i++) {
-        const st = pumpStates[i] || {};
-        const itemsHtml = pumpChecklistItems.map(it => {
-            const val = st[it.id];
-            return `
-            <div class="checklist-item">
-                <span class="checklist-label">${it.label}</span>
-                <div class="checklist-actions">
-                    <button class="check-btn pass ${val === 'ok' ? 'active' : ''}" onclick="setCheck(${i}, '${it.id}', 'ok', 'pump')">✓</button>
-                    <button class="check-btn fail ${val === 'fail' ? 'active' : ''}" onclick="setCheck(${i}, '${it.id}', 'fail', 'pump')">✗</button>
-                </div>
-            </div>`;
-        }).join('');
-
-        html += `<div class="machine-card" style="border-left-color: var(--accent-color);"><div class="machine-header"><div class="machine-number" style="background: var(--accent-color);">${i}</div><h3 class="machine-title">Dozaj Pompası ${i}</h3></div><div class="checklist">${itemsHtml}</div></div>`;
-    }
-    pumpsContainer.innerHTML = html;
-}
-
-function saveState() {
-    localStorage.setItem('servisFormuState', JSON.stringify({
-        machineCount, machineStates,
-        pumpCount, pumpStates,
-        customers, selectedCustomerId,
-        generalNotes: generalNotes.value, lastSaved: new Date().toISOString()
-    }));
-}
-
-function loadState() {
-    const s = localStorage.getItem('servisFormuState');
-    if (s) {
-        try {
-            const st = JSON.parse(s);
-            machineCount = st.machineCount || 0;
-            pumpCount = st.pumpCount || 0;
-
-            Object.assign(machineStates, st.machineStates || {});
-            Object.assign(pumpStates, st.pumpStates || {});
-
-            customers = st.customers || [];
-            selectedCustomerId = st.selectedCustomerId || null;
-            generalNotes.value = st.generalNotes || '';
-        } catch (e) { }
-    }
-}
-
-function showToast(msg) {
-    const old = document.querySelector('.toast');
-    if (old) old.remove();
-    const t = document.createElement('div');
-    t.className = 'toast show';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
-}
-
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(e => console.log(e));
-    }
 }
 
 // Global Exports
