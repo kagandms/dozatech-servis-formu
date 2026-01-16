@@ -9,13 +9,535 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dozatech Servis Formu">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Cache Busting Query String -->
-    <link rel="stylesheet" href="styles.css?v=restored">
-    <link rel="manifest" href="manifest.json">
+    <style>
+        /* CSS Variables - DozaTech Theme */
+        :root {
+            --primary-color: #4cc9f0;
+            --primary-dark: #00b4d8;
+            --primary-light: #90e0ef;
+            --accent-color: #0077b6;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --bg-dark: #0a0a14;
+            --bg-card: #12121f;
+            --bg-card-hover: #1a1a2e;
+            --bg-input: #0d0d18;
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #6b7a8f;
+            --border-radius: 16px;
+            --border-radius-sm: 12px;
+            --border-radius-xs: 8px;
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 30px rgba(76, 201, 240, 0.2);
+            --transition-fast: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0d1520 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f1629 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 40px 32px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-soft), 0 0 60px rgba(76, 201, 240, 0.1);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            max-width: 320px;
+            width: 90%;
+        }
+
+        .login-logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+        }
+
+        .login-logo img {
+            width: 100%;
+            display: block;
+        }
+
+        .login-box h2 {
+            color: var(--text-primary);
+            margin: 0 0 24px 0;
+            font-size: 1.3rem;
+        }
+
+        .login-box input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            background: var(--bg-input);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            border-radius: var(--border-radius-xs);
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .remember-me-container {
+            margin-bottom: 20px;
+            text-align: left;
+            padding-left: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: var(--bg-dark);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            min-height: 20px;
+        }
+
+        /* App Container */
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 12px;
+            padding-bottom: 80px;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            padding: 20px 8px;
+            margin-bottom: 16px;
+        }
+
+        .logo-container {
+            display: inline-block;
+            background: white;
+            padding: 16px 28px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft), 0 0 50px rgba(76, 201, 240, 0.2);
+        }
+
+        .logo-image {
+            max-width: 280px;
+            height: auto;
+            display: block;
+        }
+
+        /* Sections */
+        .customer-section,
+        .counter-section,
+        .notes-section {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(76, 201, 240, 0.1);
+            margin-bottom: 16px;
+        }
+
+        .customer-section h2,
+        .notes-section h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .customer-section h2::before,
+        .notes-section h2::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+
+        .customer-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            border-radius: var(--border-radius-xs);
+            background: var(--bg-input);
+            color: white;
+            flex: 1;
+        }
+
+        .secondary-btn {
+            padding: 0 20px;
+            background: var(--bg-input);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            color: var(--primary-color);
+            border-radius: var(--border-radius-xs);
+            cursor: pointer;
+        }
+
+        /* Counter Section */
+        .counter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .counter-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-box {
+            font-size: 1.5rem;
+        }
+
+        .counter-section h2 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        #decreaseBtn,
+        #decreasePumpBtn {
+            background: var(--danger-color);
+        }
+
+        #increaseBtn,
+        #increasePumpBtn {
+            background: var(--success-color);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .count-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* Machines Container */
+        .machines-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .machine-card {
+            background: var(--bg-input);
+            padding: 14px;
+            border-radius: var(--border-radius-sm);
+            border-left: 3px solid var(--primary-color);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .machine-header {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: bold;
+        }
+
+        .checklist {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .checklist-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .checklist-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .checklist-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .check-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid #444;
+            background: transparent;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .check-btn.pass.active {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .check-btn.fail.active {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+
+        /* Notes & Buttons */
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            border-radius: var(--border-radius-xs);
+            color: white;
+            resize: vertical;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            padding: 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: var(--bg-dark) !important;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .add-customer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-customer-form input {
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .customer-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .customer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-input);
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+
+        .customer-actions button {
+            margin-left: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 480px) {
+            .checklist {
+                grid-template-columns: 1fr;
+            }
+
+            .machines-container {
+                padding: 0 5px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -94,8 +616,8 @@
         </footer>
     </div>
 
-    <!-- Modals -->
-    <div id="customerModal" class="modal">
+    <!-- Modals (Hidden by default via inline style as backup) -->
+    <div id="customerModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Müşteri Yönetimi</h3>
@@ -104,7 +626,8 @@
             <div class="add-customer-form">
                 <input type="text" id="customerName" placeholder="Müşteri Adı">
                 <input type="tel" id="customerPhone" placeholder="Telefon (5XX...)">
-                <button id="addCustomerBtn">Ekle</button>
+                <button id="addCustomerBtn"
+                    style="background: linear-gradient(135deg, #06d6a0, #05b38a); color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Ekle</button>
             </div>
             <div id="customerList" class="customer-list">
                 <!-- Customers will be listed here -->
@@ -112,7 +635,7 @@
         </div>
     </div>
 
-    <div id="editCustomerModal" class="modal">
+    <div id="editCustomerModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Müşteri Düzenle</h3>
@@ -122,13 +645,12 @@
                 <input type="hidden" id="editCustomerId">
                 <input type="text" id="editCustomerName" placeholder="Müşteri Adı">
                 <input type="tel" id="editCustomerPhone" placeholder="Telefon (5XX...)">
-                <button id="saveEditCustomerBtn" class="primary-btn">Kaydet</button>
+                <button id="saveEditCustomerBtn" class="primary-btn" style="width:100%;">Kaydet</button>
             </div>
         </div>
     </div>
 
-    <!-- Final JS Reference -->
-    <script src="app.js?v=restored"></script>
+    <script src="app.js?v=inline_css_fix"></script>
 </body>
 
 </html>
