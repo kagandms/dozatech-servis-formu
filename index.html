@@ -631,8 +631,8 @@
         </div>
 
         <section class="notes-section">
-            <h2>Genel Notlar</h2>
-            <textarea id="generalNotes" placeholder="Buraya genel notlarınızı yazabilirsiniz..."></textarea>
+            <h2>Çözüm ve Öneriler</h2>
+            <textarea id="generalNotes" placeholder="Buraya çözüm ve önerilerinizi yazabilirsiniz..."></textarea>
         </section>
 
         <div class="action-buttons">
@@ -905,7 +905,7 @@
 
                 let html = `
                 <div class="machine-header">
-                    <span class="machine-title">Bulaşık Makinesi ${i}</span>
+                    <span class="machine-title">Bulaşık Makinesi ${i} Kontrol Listesi</span>
                 </div>
                 <div class="checklist">`;
 
@@ -949,7 +949,7 @@
 
                 let html = `
                 <div class="machine-header">
-                    <span class="machine-title">Dozaj Pompası ${i}</span>
+                    <span class="machine-title">Dozaj Pompası ${i} Kontrol Listesi</span>
                 </div>
                 <div class="checklist">`;
 
@@ -1154,9 +1154,9 @@
                     doc.addImage(logoData, 'PNG', 20, logoY, logoW, logoH);
                 } catch (e) { }
             }
-            doc.setTextColor(255, 255, 255); doc.setFontSize(24); doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(24); doc.setFont('Roboto', 'normal');
             doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
-            doc.setTextColor(...colPrimary); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...colPrimary); doc.setFontSize(10); doc.setFont('Roboto', 'normal');
             doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
             doc.setDrawColor(...colPrimary); doc.setLineWidth(0.5); doc.line(15, 45, pw - 15, 45);
 
@@ -1164,19 +1164,19 @@
 
             // DISHWASHER
             if (machineCount > 0) {
-                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('Roboto', 'normal');
                 doc.text(`BULAŞIK MAKİNELERİ (${machineCount})`, 15, y);
                 doc.setDrawColor(...colPrimary); doc.line(15, y + 3, 100, y + 3);
                 y += 15;
                 for (let i = 1; i <= machineCount; i++) {
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colPrimary); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-                    doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    doc.text(`Bulaşık Makinesi ${i}`, 20, y + 5.5);
+                    doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('Roboto', 'normal');
+                    doc.text(`Bulaşık Makinesi ${i} Kontrol Listesi`, 20, y + 5.5);
                     y += 15; // FIX: Increased distance (same as Pump)
 
                     const state = machineStates[i] || {};
-                    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9); doc.setFont('Roboto', 'normal');
                     let xPos = 20;
 
                     checklistItems.forEach((item, index) => {
@@ -1202,19 +1202,19 @@
             // DOSAGE PUMP
             if (pumpCount > 0) {
                 if (y > 230) { doc.addPage(); y = 20; }
-                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('Roboto', 'normal');
                 doc.text(`DOZAJ POMPALARI (${pumpCount})`, 15, y);
                 doc.setDrawColor(...colPrimary); doc.line(15, y + 3, 100, y + 3);
                 y += 15;
                 for (let i = 1; i <= pumpCount; i++) {
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colAccent); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-                    doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    doc.text(`Dozaj Pompası ${i}`, 20, y + 5.5);
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('Roboto', 'normal');
+                    doc.text(`Dozaj Pompası ${i} Kontrol Listesi`, 20, y + 5.5);
                     y += 15;
 
                     const state = pumpStates[i] || {};
-                    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9); doc.setFont('Roboto', 'normal');
                     let xPos = 20;
                     pumpChecklistItems.forEach((item, index) => {
                         const status = state[item.id];
@@ -1240,20 +1240,14 @@
                 if (y > 220) { doc.addPage(); y = 20; }
 
                 // Green header bar like other sections
-                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('Roboto', 'normal');
                 doc.text('ÇÖZÜM VE ÖNERİLER', 15, y);
                 doc.setDrawColor(46, 204, 113); doc.line(15, y + 3, 100, y + 3);
-                y += 15;
-
-                // Green title box
-                doc.setFillColor(46, 204, 113); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                doc.text('Notlar', 20, y + 5.5);
                 y += 12;
 
                 // Notes content
                 const txt = generalNotes.value;
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+                doc.setFont('Roboto', 'normal'); doc.setFontSize(9);
                 const lines = doc.splitTextToSize(txt, pw - 30);
                 doc.setFillColor(250, 250, 250); doc.setDrawColor(230, 230, 230);
                 const boxH = Math.max(15, lines.length * 5 + 10);
@@ -1264,7 +1258,7 @@
             // SIGNATURES
             if (y > ph - 70) { doc.addPage(); y = 20; }
             const bottomY = Math.max(y, ph - 80);
-            doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('Roboto', 'normal');
             doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
             // Stamp
@@ -1282,7 +1276,7 @@
 
             // FIX: Customer Name moved UP closer to signature area
             if (customer) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+                doc.setFont('Roboto', 'normal'); doc.setFontSize(9);
                 // bottomY + 5 is "Musteri" text. Changed to +15 to be much closer as requested
                 doc.text(customer.name, pw - 45, bottomY + 15, { align: 'center' });
             }
@@ -1301,6 +1295,8 @@
         }
 
         function handleSavePDF() {
+            const customer = customers.find(c => c.id === selectedCustomerId);
+            if (!customer) { alert('Lütfen önce müşteri seçin.'); return; }
             showToast('PDF oluşturuluyor...');
             try {
                 const { blob, fileName } = generatePDFBlob();

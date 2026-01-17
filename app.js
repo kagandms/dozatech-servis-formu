@@ -306,12 +306,12 @@ function generatePDFBlob() {
     // Title
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont('Roboto', 'normal');
     doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
 
     doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('Roboto', 'normal');
     doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
 
     doc.setDrawColor(...colPrimary);
@@ -333,11 +333,11 @@ function generatePDFBlob() {
         doc.text('M', 24, y + 13.5, { align: 'center' });
         doc.setTextColor(...colDark);
         doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont('Roboto', 'normal');
         doc.text(customer.name, 34, y + 10);
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('Roboto', 'normal');
         doc.text(customer.phone, 34, y + 18);
         y += 35;
     } else {
@@ -348,7 +348,7 @@ function generatePDFBlob() {
     if (machineCount > 0) {
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont('Roboto', 'normal');
         doc.text(`BULAŞIK MAKİNELERİ (${machineCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -361,14 +361,14 @@ function generatePDFBlob() {
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(...colDark);
             doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Bulaşık Makinesi ${i}`, 20, y + 5.5);
+            doc.setFont('Roboto', 'normal');
+            doc.text(`Bulaşık Makinesi ${i} Kontrol Listesi`, 20, y + 5.5);
 
             y += 12;
 
             const state = machineStates[i] || {};
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
+            doc.setFont('Roboto', 'normal');
 
             let xPos = 20;
 
@@ -413,7 +413,7 @@ function generatePDFBlob() {
         if (y > 230) { doc.addPage(); y = 20; }
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont('Roboto', 'normal');
         doc.text(`DOZAJ POMPALARI (${pumpCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
@@ -426,14 +426,14 @@ function generatePDFBlob() {
             doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Dozaj Pompası ${i}`, 20, y + 5.5);
+            doc.setFont('Roboto', 'normal');
+            doc.text(`Dozaj Pompası ${i} Kontrol Listesi`, 20, y + 5.5);
 
             y += 12;
 
             const state = pumpStates[i] || {};
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
+            doc.setFont('Roboto', 'normal');
 
             let xPos = 20;
 
@@ -478,24 +478,15 @@ function generatePDFBlob() {
         // Green header bar like other sections
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont('Roboto', 'normal');
         doc.text('ÇÖZÜM VE ÖNERİLER', 15, y);
         doc.setDrawColor(46, 204, 113);
         doc.line(15, y + 3, 100, y + 3);
-        y += 15;
-
-        // Green title box
-        doc.setFillColor(46, 204, 113);
-        doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Notlar', 20, y + 5.5);
         y += 12;
 
         // Notes content
         const txt = generalNotes.value;
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('Roboto', 'normal');
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(txt, pw - 30);
         doc.setFillColor(250, 250, 250);
@@ -516,7 +507,7 @@ function generatePDFBlob() {
     // Left: DozaTech + Stamp
     doc.setTextColor(...colDark);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont('Roboto', 'normal');
     doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
     // Stamp
@@ -536,7 +527,7 @@ function generatePDFBlob() {
     // Right: Customer
     doc.text('Müşteri', pw - 45, bottomY + 5, { align: 'center' });
     if (customer) {
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('Roboto', 'normal');
         doc.setFontSize(9);
         doc.text(customer.name, pw - 45, bottomY + 30, { align: 'center' });
     }

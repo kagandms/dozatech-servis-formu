@@ -1,6 +1,6 @@
 // Service Worker for Servis Formu PWA (Single File Edition)
 
-const CACHE_NAME = 'servis-formu-v18-turkish-chars';
+const CACHE_NAME = 'servis-formu-v19-kontrol-listesi';
 const urlsToCache = [
     '/',
     '/index.html',
