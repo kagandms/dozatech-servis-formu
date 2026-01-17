@@ -349,7 +349,7 @@ function generatePDFBlob() {
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(`BULASIK MAKINELERI (${machineCount})`, 15, y);
+        doc.text(`BULAŞIK MAKİNELERİ (${machineCount})`, 15, y);
         doc.setDrawColor(...colPrimary);
         doc.line(15, y + 3, 100, y + 3);
         y += 15;
@@ -362,7 +362,7 @@ function generatePDFBlob() {
             doc.setTextColor(...colDark);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
+            doc.text(`Bulaşık Makinesi ${i}`, 20, y + 5.5);
 
             y += 12;
 
@@ -427,7 +427,7 @@ function generatePDFBlob() {
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
+            doc.text(`Dozaj Pompası ${i}`, 20, y + 5.5);
 
             y += 12;
 
@@ -479,7 +479,7 @@ function generatePDFBlob() {
         doc.setTextColor(...colDark);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text('COZUM VE ONERILER', 15, y);
+        doc.text('ÇÖZÜM VE ÖNERİLER', 15, y);
         doc.setDrawColor(46, 204, 113);
         doc.line(15, y + 3, 100, y + 3);
         y += 15;
@@ -530,11 +530,11 @@ function generatePDFBlob() {
             doc.addImage(stampData, 'JPEG', 20, bottomY + 8, sW, sH);
         } catch (e) { }
     } else {
-        doc.text('Imza / Kase', 40, bottomY + 30, { align: 'center' });
+        doc.text('İmza / Kaşe', 40, bottomY + 30, { align: 'center' });
     }
 
     // Right: Customer
-    doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
+    doc.text('Müşteri', pw - 45, bottomY + 5, { align: 'center' });
     if (customer) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
