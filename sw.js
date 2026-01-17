@@ -1,10 +1,11 @@
 // Service Worker for Servis Formu PWA (Single File Edition)
 
-const CACHE_NAME = 'servis-formu-v17-pdf-name-pos';
+const CACHE_NAME = 'servis-formu-v18-turkish-chars';
 const urlsToCache = [
     '/',
     '/index.html',
     '/manifest.json',
+    '/roboto-font.js',
     '/logo.png',
     '/kase.jpg',
     '/icons/icon-192.png',
