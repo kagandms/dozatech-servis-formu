@@ -1,6 +1,6 @@
 // Service Worker for Servis Formu PWA (Single File Edition)
 
-const CACHE_NAME = 'servis-formu-v21-inline-font';
+const CACHE_NAME = 'servis-formu-v22-noto-sans';
 const urlsToCache = [
     '/',
     '/index.html',

@@ -307,7 +307,7 @@ function generatePDFBlob() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('Roboto', 'normal');
-    doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
+    doc.text('SERVİS FORMU', pw - 15, 22, { align: 'right' });
 
     doc.setTextColor(...colPrimary);
     doc.setFontSize(10);
