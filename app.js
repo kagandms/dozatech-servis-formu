@@ -45,18 +45,26 @@ window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defe
 
 // --- DISHWASHER ITEMS ---
 const checklistItems = [
-    { id: 'yikama-kollari', label: 'Yıkama Kolları' },
-    { id: 'deterjan-pompasi', label: 'Deterjan/Parlatıcı Pompası' },
-    { id: 'pompa-mebrani', label: 'Pompa Mebranı Değişimi' },
-    { id: 'parlatici-girisi', label: 'Parlatıcı Girişi Değişimi' },
-    { id: 'cekvalf', label: 'Çekvalf Değişimi' }
+    { id: 'yikama-suyu-isisi', label: 'Yıkama Suyu Isısı' },
+    { id: 'durulama-suyu-isisi', label: 'Durulama Suyu Isısı' },
+    { id: 'yikama-kolu', label: 'Yıkama Kolu' },
+    { id: 'kirec-bakimi', label: 'Kireç Bakımı' },
+    { id: 'urunler-dogru-kullanim', label: 'Ürünler Doğru Şekilde Kullanılıyor' },
+    { id: 'deterjan-kalintisi', label: 'Deterjan Kalıntısı' },
+    { id: 'yikama-kalitesi', label: 'Yıkama Kalitesi' },
+    { id: 'kurutma', label: 'Kurutma' }
 ];
 
 // --- DOSAGE PUMP ITEMS ---
 const pumpChecklistItems = [
-    { id: 'hortum', label: 'Hortum Değişimi' },
-    { id: 'mebran', label: 'Mebran Değişimi' },
-    { id: 'pompa', label: 'Pompa Değişimi' }
+    { id: 'deterjan-pompasi', label: 'Deterjan Pompası' },
+    { id: 'parlatici-pompasi', label: 'Parlatıcı Pompası' },
+    { id: 'hortumlar', label: 'Hortumlar' },
+    { id: 'bidon-agirliklari', label: 'Bidon Ağırlıkları' },
+    { id: 'parlatici-cekvalf', label: 'Parlatıcı Çekvalf' },
+    { id: 'deterjan-girisi', label: 'Deterjan Girişi' },
+    { id: 'sivi-kacagi', label: 'Sıvı Kaçağı' },
+    { id: 'pompa-askisi', label: 'Pompa Askısı' }
 ];
 
 let machineCount = 0;
@@ -157,17 +165,12 @@ function setupEventListeners() {
 
 function addCustomer() {
     const name = customerNameInput.value.trim();
-    let phone = customerPhoneInput.value.trim();
-    if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
-    phone = phone.replace(/\D/g, '');
-    if (phone.startsWith('0')) phone = phone.substring(1);
-    if (!phone.startsWith('90')) phone = '90' + phone;
-    customers.push({ id: Date.now().toString(), name, phone });
+    if (!name) { alert('Lütfen müşteri adını girin.'); return; }
+    customers.push({ id: Date.now().toString(), name });
     saveState();
     renderCustomerList();
     renderCustomerSelect();
     customerNameInput.value = '';
-    customerPhoneInput.value = '';
 }
 
 function deleteCustomer(id) {
@@ -192,14 +195,10 @@ function openEditCustomerModal(id) {
 function saveEditedCustomer() {
     const id = editCustomerIdInput.value;
     const name = editCustomerNameInput.value.trim();
-    let phone = editCustomerPhoneInput.value.trim();
-    if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
-    phone = phone.replace(/\D/g, '');
-    if (phone.startsWith('0')) phone = phone.substring(1);
-    if (!phone.startsWith('90')) phone = '90' + phone;
+    if (!name) { alert('Lütfen müşteri adını girin.'); return; }
     const idx = customers.findIndex(c => c.id === id);
     if (idx > -1) {
-        customers[idx] = { id, name, phone };
+        customers[idx] = { id, name };
         saveState();
         renderCustomerList();
         renderCustomerSelect();
@@ -264,8 +263,14 @@ function generatePDFBlob() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Using Standard Helvetica
-    doc.setFont('helvetica');
+    // Register Roboto font for Turkish character support
+    if (typeof ROBOTO_FONT_BASE64 !== 'undefined') {
+        doc.addFileToVFS('Roboto-Regular.ttf', ROBOTO_FONT_BASE64);
+        doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+        doc.setFont('Roboto');
+    } else {
+        doc.setFont('helvetica');
+    }
 
     const customer = customers.find(c => c.id === selectedCustomerId);
     const date = new Date().toLocaleDateString('tr-TR');
@@ -329,7 +334,7 @@ function generatePDFBlob() {
         doc.setTextColor(...colDark);
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text(convertTurkish(customer.name), 34, y + 10);
+        doc.text(customer.name, 34, y + 10);
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -388,7 +393,7 @@ function generatePDFBlob() {
 
                 doc.setTextColor(80, 80, 80);
                 doc.setFontSize(9);
-                doc.text(convertTurkish(item.label), xPos + 7, y);
+                doc.text(item.label, xPos + 7, y);
 
                 if (index % 2 === 0) {
                     xPos = pw / 2 + 5;
@@ -452,7 +457,7 @@ function generatePDFBlob() {
 
                 doc.setTextColor(80, 80, 80);
                 doc.setFontSize(9);
-                doc.text(convertTurkish(item.label), xPos + 7, y);
+                doc.text(item.label, xPos + 7, y);
 
                 if (index % 2 === 0) {
                     xPos = pw / 2 + 5;
@@ -466,15 +471,30 @@ function generatePDFBlob() {
         }
     }
 
-    // === NOTES ===
+    // === NOTES (COZUM VE ONERILER) ===
     if (generalNotes.value.trim()) {
         if (y > 220) { doc.addPage(); y = 20; }
-        const txt = convertTurkish(generalNotes.value);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
+
+        // Green header bar like other sections
         doc.setTextColor(...colDark);
-        doc.text('NOTLAR:', 15, y);
-        y += 6;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('COZUM VE ONERILER', 15, y);
+        doc.setDrawColor(46, 204, 113);
+        doc.line(15, y + 3, 100, y + 3);
+        y += 15;
+
+        // Green title box
+        doc.setFillColor(46, 204, 113);
+        doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Notlar', 20, y + 5.5);
+        y += 12;
+
+        // Notes content
+        const txt = generalNotes.value;
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         const lines = doc.splitTextToSize(txt, pw - 30);
@@ -518,7 +538,7 @@ function generatePDFBlob() {
     if (customer) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.text(convertTurkish(customer.name), pw - 45, bottomY + 30, { align: 'center' });
+        doc.text(customer.name, pw - 45, bottomY + 30, { align: 'center' });
     }
     doc.setDrawColor(150, 150, 150);
     doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
@@ -529,11 +549,11 @@ function generatePDFBlob() {
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(8);
     // Filename: servisformu_...
-    const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
+    const safeName = customer ? customer.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_ğüşöçıİĞÜŞÖÇ]/g, '') : 'Musteri';
     const fn = `servisformu_${safeName}_${date.replace(/\./g, '-')}.pdf`;
 
-    doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
-    doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
+    doc.text('DozaTech - Endüstriyel Mutfak Çözümleri', pw / 2, ph - 9, { align: 'center' });
+    doc.text('Bu form dijital olarak oluşturulmuştur.', pw / 2, ph - 5, { align: 'center' });
 
     return { blob: doc.output('blob'), fileName: fn };
 }

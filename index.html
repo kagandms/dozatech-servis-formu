@@ -13,6 +13,8 @@
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Turkish Character Support Font (Roboto) -->
+    <script src="roboto-font.js"></script>
 
     <style>
         /* CSS Variables - DozaTech Theme */
@@ -656,7 +658,6 @@
             </div>
             <div class="add-customer-form">
                 <input type="text" id="customerName" placeholder="Müşteri Adı">
-                <input type="tel" id="customerPhone" placeholder="Telefon (5XX...)">
                 <button id="addCustomerBtn"
                     style="background: linear-gradient(135deg, #06d6a0, #05b38a); color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Ekle</button>
             </div>
@@ -673,7 +674,6 @@
             <div class="add-customer-form">
                 <input type="hidden" id="editCustomerId">
                 <input type="text" id="editCustomerName" placeholder="Müşteri Adı">
-                <input type="tel" id="editCustomerPhone" placeholder="Telefon (5XX...)">
                 <button id="saveEditCustomerBtn" class="primary-btn" style="width:100%;">Kaydet</button>
             </div>
         </div>
@@ -730,17 +730,25 @@
 
         // Checklists
         const checklistItems = [
-            { id: 'yikama-kollari', label: 'Yıkama Kolları' },
-            { id: 'deterjan-pompasi', label: 'Deterjan/Parlatıcı Pompası' },
-            { id: 'pompa-mebrani', label: 'Pompa Mebranı Değişimi' },
-            { id: 'parlatici-girisi', label: 'Parlatıcı Girişi Değişimi' },
-            { id: 'cekvalf', label: 'Çekvalf Değişimi' }
+            { id: 'yikama-suyu-isisi', label: 'Yıkama Suyu Isısı' },
+            { id: 'durulama-suyu-isisi', label: 'Durulama Suyu Isısı' },
+            { id: 'yikama-kolu', label: 'Yıkama Kolu' },
+            { id: 'kirec-bakimi', label: 'Kireç Bakımı' },
+            { id: 'urunler-dogru-kullanim', label: 'Ürünler Doğru Şekilde Kullanılıyor' },
+            { id: 'deterjan-kalintisi', label: 'Deterjan Kalıntısı' },
+            { id: 'yikama-kalitesi', label: 'Yıkama Kalitesi' },
+            { id: 'kurutma', label: 'Kurutma' }
         ];
 
         const pumpChecklistItems = [
-            { id: 'hortum', label: 'Hortum Değişimi' },
-            { id: 'mebran', label: 'Mebran Değişimi' },
-            { id: 'pompa', label: 'Pompa Değişimi' }
+            { id: 'deterjan-pompasi', label: 'Deterjan Pompası' },
+            { id: 'parlatici-pompasi', label: 'Parlatıcı Pompası' },
+            { id: 'hortumlar', label: 'Hortumlar' },
+            { id: 'bidon-agirliklari', label: 'Bidon Ağırlıkları' },
+            { id: 'parlatici-cekvalf', label: 'Parlatıcı Çekvalf' },
+            { id: 'deterjan-girisi', label: 'Deterjan Girişi' },
+            { id: 'sivi-kacagi', label: 'Sıvı Kaçağı' },
+            { id: 'pompa-askisi', label: 'Pompa Askısı' }
         ];
 
         let machineCount = 0; const machineStates = {};
@@ -1011,17 +1019,12 @@
 
         function addCustomer() {
             const name = customerNameInput.value.trim();
-            let phone = customerPhoneInput.value.trim();
-            if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
-            phone = phone.replace(/\D/g, '');
-            if (phone.startsWith('0')) phone = phone.substring(1);
-            if (!phone.startsWith('90')) phone = '90' + phone;
-            customers.push({ id: Date.now().toString(), name, phone });
+            if (!name) { alert('Lütfen müşteri adını girin.'); return; }
+            customers.push({ id: Date.now().toString(), name });
             saveState();
             renderCustomerList();
             renderCustomerSelect();
             customerNameInput.value = '';
-            customerPhoneInput.value = '';
         }
 
         function deleteCustomer(id) {
@@ -1039,7 +1042,6 @@
             if (!c) return;
             editCustomerIdInput.value = c.id;
             editCustomerNameInput.value = c.name;
-            editCustomerPhoneInput.value = c.phone;
             editCustomerModal.style.display = 'flex';
             editCustomerModal.classList.add('show');
         }
@@ -1047,14 +1049,10 @@
         function saveEditedCustomer() {
             const id = editCustomerIdInput.value;
             const name = editCustomerNameInput.value.trim();
-            let phone = editCustomerPhoneInput.value.trim();
-            if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
-            phone = phone.replace(/\D/g, '');
-            if (phone.startsWith('0')) phone = phone.substring(1);
-            if (!phone.startsWith('90')) phone = '90' + phone;
+            if (!name) { alert('Lütfen müşteri adını girin.'); return; }
             const idx = customers.findIndex(c => c.id === id);
             if (idx > -1) {
-                customers[idx] = { id, name, phone };
+                customers[idx] = { id, name };
                 saveState();
                 renderCustomerList();
                 renderCustomerSelect();
@@ -1072,7 +1070,6 @@
                 <div class="customer-item">
                     <div class="customer-info" style="color:white;">
                         <div class="customer-name" style="font-weight:bold;">${c.name}</div>
-                        <div class="customer-phone" style="font-size:0.85rem; opacity:0.8;">${c.phone}</div>
                     </div>
                     <div class="customer-actions">
                         <button class="customer-action-btn edit" onclick="openEditCustomerModal('${c.id}')">✏️</button>
@@ -1121,7 +1118,15 @@
         function generatePDFBlob() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFont('helvetica');
+
+            // Register Roboto font for Turkish character support
+            if (typeof ROBOTO_FONT_BASE64 !== 'undefined') {
+                doc.addFileToVFS('Roboto-Regular.ttf', ROBOTO_FONT_BASE64);
+                doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                doc.setFont('Roboto');
+            } else {
+                doc.setFont('helvetica');
+            }
 
             const customer = customers.find(c => c.id === selectedCustomerId);
             const date = new Date().toLocaleDateString('tr-TR');
@@ -1185,7 +1190,7 @@
                         } else {
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
-                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
+                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(item.label, xPos + 7, y);
                         // FIX: Increased row spacing to avoid "dip dibe" look
                         if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
@@ -1222,7 +1227,7 @@
                         } else {
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
-                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
+                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(item.label, xPos + 7, y);
                         // FIX: Increased row spacing
                         if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
@@ -1230,11 +1235,24 @@
                 }
             }
 
-            // NOTES
+            // NOTES (COZUM VE ONERILER)
             if (generalNotes.value.trim()) {
                 if (y > 220) { doc.addPage(); y = 20; }
-                const txt = convertTurkish(generalNotes.value);
-                doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...colDark); doc.text('NOTLAR:', 15, y); y += 6;
+
+                // Green header bar like other sections
+                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text('COZUM VE ONERILER', 15, y);
+                doc.setDrawColor(46, 204, 113); doc.line(15, y + 3, 100, y + 3);
+                y += 15;
+
+                // Green title box
+                doc.setFillColor(46, 204, 113); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
+                doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+                doc.text('Notlar', 20, y + 5.5);
+                y += 12;
+
+                // Notes content
+                const txt = generalNotes.value;
                 doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
                 const lines = doc.splitTextToSize(txt, pw - 30);
                 doc.setFillColor(250, 250, 250); doc.setDrawColor(230, 230, 230);
@@ -1266,7 +1284,7 @@
             if (customer) {
                 doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
                 // bottomY + 5 is "Musteri" text. Changed to +15 to be much closer as requested
-                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 15, { align: 'center' });
+                doc.text(customer.name, pw - 45, bottomY + 15, { align: 'center' });
             }
             // FIX: Removed the line
             // doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
@@ -1274,10 +1292,10 @@
             // FOOTER
             doc.setFillColor(...colDark); doc.rect(0, ph - 15, pw, 15, 'F');
             doc.setTextColor(150, 150, 150); doc.setFontSize(8);
-            const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
+            const safeName = customer ? customer.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_ğüşöçıİĞÜŞÖÇ]/g, '') : 'Musteri';
             const fn = `servisformu_${safeName}_${date.replace(/\./g, '-')}.pdf`;
-            doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
-            doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
+            doc.text('DozaTech - Endüstriyel Mutfak Çözümleri', pw / 2, ph - 9, { align: 'center' });
+            doc.text('Bu form dijital olarak oluşturulmuştur.', pw / 2, ph - 5, { align: 'center' });
 
             return { blob: doc.output('blob'), fileName: fn };
         }
