@@ -730,17 +730,26 @@
 
         // Checklists
         const checklistItems = [
-            { id: 'yikama-kollari', label: 'Yıkama Kolları' },
-            { id: 'deterjan-pompasi', label: 'Deterjan/Parlatıcı Pompası' },
-            { id: 'pompa-mebrani', label: 'Pompa Mebranı Değişimi' },
-            { id: 'parlatici-girisi', label: 'Parlatıcı Girişi Değişimi' },
-            { id: 'cekvalf', label: 'Çekvalf Değişimi' }
+            { id: 'yikama-suyu-isisi', label: 'Yıkama suyu Isısı' },
+            { id: 'durulama-suyu-isisi', label: 'Durulama suyu Isısı' },
+            { id: 'yikama-kolu', label: 'Yıkama kolu' },
+            { id: 'durulama-kolu', label: 'Durulama kolu' },
+            { id: 'kirec-bakimi', label: 'Kireç bakımı' },
+            { id: 'urunler-dogru-takili-mi', label: 'Ürünler doğru takılı mı' },
+            { id: 'deterjan-kalintisi', label: 'Deterjan kalıntısı' },
+            { id: 'yikama-kalitesi', label: 'Yıkama kalitesi' },
+            { id: 'kurutma', label: 'Kurutma' }
         ];
 
         const pumpChecklistItems = [
-            { id: 'hortum', label: 'Hortum Değişimi' },
-            { id: 'mebran', label: 'Mebran Değişimi' },
-            { id: 'pompa', label: 'Pompa Değişimi' }
+            { id: 'deterjan-pompa', label: 'Deterjan pompa' },
+            { id: 'parlatici-pompa', label: 'Parlatıcı pompa' },
+            { id: 'hortumlar', label: 'Hortumlar' },
+            { id: 'bidon-agirligi', label: 'Bidon ağırlığı' },
+            { id: 'parlatici-cekwalf', label: 'Parlatıcı Çekwalf' },
+            { id: 'deterjan-girisi', label: 'Deterjan giriși' },
+            { id: 'sivi-kacagi', label: 'Sıvı kaçağı' },
+            { id: 'pompa-askisi', label: 'Pompa askısı' }
         ];
 
         let machineCount = 0; const machineStates = {};
@@ -1048,7 +1057,7 @@
         function addCustomer() {
             const name = customerNameInput.value.trim();
             let phone = customerPhoneInput.value.trim();
-            if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
+            if (!name) { alert('Lütfen müşteri adını girin.'); return; }
             phone = phone.replace(/\D/g, '');
             if (phone.startsWith('0')) phone = phone.substring(1);
             if (!phone.startsWith('90')) phone = '90' + phone;
@@ -1084,7 +1093,7 @@
             const id = editCustomerIdInput.value;
             const name = editCustomerNameInput.value.trim();
             let phone = editCustomerPhoneInput.value.trim();
-            if (!name || !phone) { alert('Lütfen tüm alanları doldurun.'); return; }
+            if (!name) { alert('Lütfen müşteri adını girin.'); return; }
             phone = phone.replace(/\D/g, '');
             if (phone.startsWith('0')) phone = phone.substring(1);
             if (!phone.startsWith('90')) phone = '90' + phone;
@@ -1335,6 +1344,7 @@
         function handleSendWhatsApp() {
             const customer = customers.find(c => c.id === selectedCustomerId);
             if (!customer) { alert('Lütfen müşteri seçin.'); return; }
+            if (!customer.phone) { alert('Müşterinin telefon numarası kayıtlı değil. Lütfen müşteri bilgilerini güncelleyin.'); return; }
             try {
                 const { blob, fileName } = generatePDFBlob();
                 const file = new File([blob], fileName, { type: 'application/pdf' });
