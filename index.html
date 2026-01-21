@@ -13,6 +13,7 @@
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="fonts.js"></script>
 
     <style>
         /* CSS Variables - DozaTech Theme */
@@ -1132,17 +1133,7 @@
             customerSelect.value = selectedCustomerId || "";
         }
 
-        // === PDF LOGIC (Fallback Chars) ===
-        function convertTurkish(t) {
-            if (!t) return '';
-            return t.replace(/ı/g, 'i').replace(/İ/g, 'I')
-                .replace(/ş/g, 's').replace(/Ş/g, 'S')
-                .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
-                .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-                .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-                .replace(/ç/g, 'c').replace(/Ç/g, 'C');
-        }
-
+        // === PDF LOGIC ===
         function getImageDataUrl(selector) {
             const img = document.querySelector(selector);
             if (!img) return null;
@@ -1161,7 +1152,15 @@
         function generatePDFBlob() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFont('helvetica');
+
+            // Add custom font if available
+            if (window.pdfFont) {
+                doc.addFileToVFS("Roboto-Regular.ttf", window.pdfFont);
+                doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+                doc.setFont("Roboto");
+            } else {
+                doc.setFont('helvetica');
+            }
 
             const customer = customers.find(c => c.id === selectedCustomerId);
             const date = new Date().toLocaleDateString('tr-TR');
@@ -1189,9 +1188,9 @@
                     doc.addImage(logoData, 'PNG', 20, logoY, logoW, logoH);
                 } catch (e) { }
             }
-            doc.setTextColor(255, 255, 255); doc.setFontSize(24); doc.setFont('helvetica', 'bold');
-            doc.text('SERVIS FORMU', pw - 15, 22, { align: 'right' });
-            doc.setTextColor(...colPrimary); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(24); if (window.pdfFont) doc.setFont('Roboto', 'normal'); // Bold not available in subset
+            doc.text('SERVİS FORMU', pw - 15, 22, { align: 'right' });
+            doc.setTextColor(...colPrimary); doc.setFontSize(10);
             doc.text(`Tarih: ${date}   Saat: ${time}`, pw - 15, 32, { align: 'right' });
             doc.setDrawColor(...colPrimary); doc.setLineWidth(0.5); doc.line(15, 45, pw - 15, 45);
 
@@ -1199,19 +1198,19 @@
 
             // DISHWASHER
             if (machineCount > 0) {
-                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-                doc.text(`BULASIK MAKINELERI (${machineCount})`, 15, y);
+                doc.setTextColor(...colDark); doc.setFontSize(14);
+                doc.text(`BULAŞIK MAKİNELERİ (${machineCount})`, 15, y);
                 doc.setDrawColor(...colPrimary); doc.line(15, y + 3, 100, y + 3);
                 y += 15;
                 for (let i = 1; i <= machineCount; i++) {
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colPrimary); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-                    doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    doc.text(`Bulasik Makinesi ${i}`, 20, y + 5.5);
+                    doc.setTextColor(...colDark); doc.setFontSize(10);
+                    doc.text(`Bulaşık Makinesi ${i}`, 20, y + 5.5);
                     y += 15; // FIX: Increased distance (same as Pump)
 
                     const state = machineStates[i] || {};
-                    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
                     let xPos = 20;
 
                     checklistItems.forEach((item, index) => {
@@ -1225,7 +1224,7 @@
                         } else {
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
-                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
+                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(item.label, xPos + 7, y);
                         // FIX: Increased row spacing to avoid "dip dibe" look
                         if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
@@ -1237,19 +1236,19 @@
             // DOSAGE PUMP
             if (pumpCount > 0) {
                 if (y > 230) { doc.addPage(); y = 20; }
-                doc.setTextColor(...colDark); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...colDark); doc.setFontSize(14);
                 doc.text(`DOZAJ POMPALARI (${pumpCount})`, 15, y);
                 doc.setDrawColor(...colPrimary); doc.line(15, y + 3, 100, y + 3);
                 y += 15;
                 for (let i = 1; i <= pumpCount; i++) {
                     if (y > 230) { doc.addPage(); y = 20; }
                     doc.setFillColor(...colAccent); doc.roundedRect(15, y, pw - 30, 8, 2, 2, 'F');
-                    doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-                    doc.text(`Dozaj Pompasi ${i}`, 20, y + 5.5);
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(10);
+                    doc.text(`Dozaj Pompası ${i}`, 20, y + 5.5);
                     y += 15;
 
                     const state = pumpStates[i] || {};
-                    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
                     let xPos = 20;
                     pumpChecklistItems.forEach((item, index) => {
                         const status = state[item.id];
@@ -1262,7 +1261,7 @@
                         } else {
                             doc.setDrawColor(200, 200, 200); doc.circle(xPos + 2, y - 1, 3, 'S');
                         }
-                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(convertTurkish(item.label), xPos + 7, y);
+                        doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.text(item.label, xPos + 7, y);
                         // FIX: Increased row spacing
                         if (index % 2 === 0) xPos = pw / 2 + 5; else { xPos = 20; y += 8; }
                     });
@@ -1273,9 +1272,9 @@
             // NOTES
             if (generalNotes.value.trim()) {
                 if (y > 220) { doc.addPage(); y = 20; }
-                const txt = convertTurkish(generalNotes.value);
-                doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...colDark); doc.text('NOTLAR:', 15, y); y += 6;
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+                const txt = generalNotes.value;
+                doc.setFontSize(10); doc.setTextColor(...colDark); doc.text('NOTLAR:', 15, y); y += 6;
+                doc.setFontSize(9);
                 const lines = doc.splitTextToSize(txt, pw - 30);
                 doc.setFillColor(250, 250, 250); doc.setDrawColor(230, 230, 230);
                 const boxH = Math.max(15, lines.length * 5 + 10);
@@ -1286,7 +1285,7 @@
             // SIGNATURES
             if (y > ph - 70) { doc.addPage(); y = 20; }
             const bottomY = Math.max(y, ph - 80);
-            doc.setTextColor(...colDark); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colDark); doc.setFontSize(10);
             doc.text('DozaTech Teknik Servis', 40, bottomY + 5, { align: 'center' });
 
             // Stamp
@@ -1298,15 +1297,15 @@
                     const sW = 40; const sH = sW * sRatio;
                     doc.addImage(stampData, 'JPEG', 20, bottomY + 8, sW, sH);
                 } catch (e) { }
-            } else { doc.text('Imza / Kase', 40, bottomY + 30, { align: 'center' }); }
+            } else { doc.text('İmza / Kaşe', 40, bottomY + 30, { align: 'center' }); }
 
-            doc.text('Musteri', pw - 45, bottomY + 5, { align: 'center' });
+            doc.text('Müşteri', pw - 45, bottomY + 5, { align: 'center' });
 
             // FIX: Customer Name moved UP closer to signature area
             if (customer) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+                doc.setFontSize(9);
                 // bottomY + 5 is "Musteri" text. Changed to +15 to be much closer as requested
-                doc.text(convertTurkish(customer.name), pw - 45, bottomY + 15, { align: 'center' });
+                doc.text(customer.name, pw - 45, bottomY + 15, { align: 'center' });
             }
             // FIX: Removed the line
             // doc.setDrawColor(150, 150, 150); doc.line(pw - 70, bottomY + 35, pw - 20, bottomY + 35);
@@ -1314,10 +1313,10 @@
             // FOOTER
             doc.setFillColor(...colDark); doc.rect(0, ph - 15, pw, 15, 'F');
             doc.setTextColor(150, 150, 150); doc.setFontSize(8);
-            const safeName = customer ? convertTurkish(customer.name).replace(/\s+/g, '_') : 'Musteri';
+            const safeName = customer ? customer.name.replace(/\s+/g, '_') : 'Musteri';
             const fn = `servisformu_${safeName}_${date.replace(/\./g, '-')}.pdf`;
-            doc.text('DozaTech - Endustriyel Mutfak Cozumleri', pw / 2, ph - 9, { align: 'center' });
-            doc.text('Bu form dijital olarak olusturulmustur.', pw / 2, ph - 5, { align: 'center' });
+            doc.text('DozaTech - Endüstriyel Mutfak Çözümleri', pw / 2, ph - 9, { align: 'center' });
+            doc.text('Bu form dijital olarak oluşturulmuştur.', pw / 2, ph - 5, { align: 'center' });
 
             return { blob: doc.output('blob'), fileName: fn };
         }
